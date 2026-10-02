@@ -20,8 +20,6 @@
   --accent-soft: rgb(217 67 27 / 0.12);
   --ring: var(--accent);
 
-  --font-sans: var(--font-geist-sans), "Helvetica Neue", Arial, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   --gutter: clamp(1rem, 0.55rem + 2.4vw, 2.5rem);
   --section-space: clamp(6rem, 3.5rem + 9vw, 11rem);
@@ -59,8 +57,8 @@
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-ring: var(--ring);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-code);
   --radius-media: var(--radius-media);
   --radius-pill: var(--radius-pill);
   --ease-out-expo: var(--ease-out);
@@ -96,9 +94,12 @@ html.dark {
 }
 
 body {
+  /* Declared on body, where next/font sets --font-geist-*; on :root they would resolve empty. */
+  --font-body: var(--font-geist-sans), "Helvetica Neue", Arial, sans-serif;
+  --font-code: var(--font-geist-mono), ui-monospace, monospace;
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: clip;
@@ -138,7 +139,7 @@ section[id] {
 }
 
 .meta {
-  font-family: var(--font-mono);
+  font-family: var(--font-code);
   font-size: var(--text-meta);
   line-height: var(--text-meta--line-height);
   letter-spacing: var(--text-meta--letter-spacing);
