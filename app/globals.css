@@ -289,17 +289,17 @@ html[data-theme-anim="1"]::view-transition-new(root) {
 
 /* Hero atmosphere ---------------------------------------------------------- */
 
-/* Shown until the canyon renders, and instead of it without WebGL. */
-.ravine-fallback {
-  background: radial-gradient(circle at 62% 62%, #343432 0%, #121211 48%, #070707 100%);
+/* Shown before the liquid type draws (and if it never does). */
+.hero-fallback {
+  background: radial-gradient(circle at 62% 80%, #262624 0%, #111110 50%, #0b0b0a 100%);
 }
 
-/* Keeps type readable over the canyon: darker at the top for the nav,
-   a soft pool behind the copy, deeper at the foot. */
+/* Keeps the copy readable over the liquid: a soft pool behind the text on
+   the left, open on the right where the fluid can be seen. */
 .hero-overlay {
   background:
-    linear-gradient(90deg, rgb(8 8 8 / 0.55) 0%, rgb(8 8 8 / 0.2) 55%, rgb(8 8 8 / 0) 100%),
-    linear-gradient(180deg, rgb(8 8 8 / 0.5) 0%, rgb(8 8 8 / 0.1) 45%, rgb(8 8 8 / 0.45) 100%);
+    linear-gradient(90deg, rgb(14 14 13 / 0.7) 0%, rgb(14 14 13 / 0.35) 45%, rgb(14 14 13 / 0) 75%),
+    linear-gradient(180deg, rgb(14 14 13 / 0.4) 0%, rgb(14 14 13 / 0) 35%);
 }
 
 /* Dissolves the dark hero into the page below, in either theme. */

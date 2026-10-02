@@ -65,16 +65,18 @@ Tokens are in `app/globals.css` (colour, type scale, spacing, radius, motion, z-
 - **Shape:** media uses a 3px radius, interactive controls are full pills. Nothing in between.
 - **Motion:** one easing curve (`--ease-out`). Reveals on scroll, a masked headline reveal, magnetic email, pointer-drift on project images, and a WebGL hover morph on the About portrait (fine pointers only). Everything respects `prefers-reduced-motion`.
 
-## Hero canyon
+## Hero background
 
-The hero background is `components/shaders/ravine.tsx`, an original ray-marched canyon whose props mirror React Bits Pro's Ravine (`speed`, `steps`, `fov`, `nearColor`, ...). If you buy React Bits Pro you can swap the official component into `components/hero/hero-atmosphere.tsx` without other changes.
+The hero background is `components/shaders/liquid-ascii.tsx`, a FLIP fluid simulation (`flip-fluid.ts`) drawn as ASCII characters. Still water reads as light texture; moving water gets the heavier glyphs. It is an original implementation whose props mirror React Bits Pro's Liquid ASCII (`cellSize`, `gravity`, `flipRatio`, `characters`, ...). If you buy React Bits Pro you can swap the official component into `components/hero/hero-atmosphere.tsx` without other changes.
 
 Settings live in `hero-atmosphere.tsx`:
 
-- Desktop: 96 ray-march steps, full resolution, speed 0.1. Mobile: 48 steps, 75% resolution, speed 0.08.
-- If frames run slow, it steps quality down twice, then holds a still frame.
-- It stops rendering when the hero is off-screen or the tab is hidden.
-- Reduced motion shows one still frame. Without WebGL, a static graphite gradient shows instead.
+- Desktop: 14px cells, a 72-column fluid grid, 30 pressure iterations. Mobile: 12px cells, 44 columns, 20 iterations.
+- The cursor pushes the fluid (mouse only, so touch scrolling is unaffected). When idle, the pool sloshes gently.
+- If frames run slow, it simplifies the solver, draws every other frame, then holds a still frame.
+- It stops when the hero is off-screen or the tab is hidden.
+- Reduced motion settles the fluid and shows one still frame.
+- It uses 2D canvas, so it needs no WebGL.
 
 The hero is a dark surface in both themes (`.on-dark`), and fades into the page through `.hero-fade`.
 
@@ -84,7 +86,7 @@ The hero is a dark surface in both themes (`.on-dark`), and fades into the page 
 app/            layout, page, globals.css, sitemap, robots, icons
 components/
   navigation/   fixed nav, scroll-spy, theme toggle, mobile menu
-  hero/         hero copy and the canyon atmosphere
+  hero/         hero copy and the liquid ASCII atmosphere
   about/        editorial statement, portrait with WebGL morph
   projects/     selected work grid and cards
   experience/   timeline
@@ -94,7 +96,7 @@ components/
   contact/      contact section, copy-to-clipboard email
   footer/
   layout/       providers, smooth scroll, skip link
-  shaders/      Ravine canyon (hero), flow shader (contact background)
+  shaders/      Liquid ASCII + FLIP solver (hero), flow shader (contact background)
   ui/           Reveal, SplitReveal, Magnetic, ArrowLink, SectionHeading
 content/        all editable content
 lib/            metadata, tokens, hooks

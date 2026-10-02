@@ -64,7 +64,7 @@ export function Hero(): ReactNode {
           <a
             href="#about"
             aria-label="Skip to introduction"
-            className="inline-flex size-11 items-center justify-center rounded-pill border border-line transition-colors hover:border-foreground/60 hover:text-foreground"
+            className="inline-flex size-11 items-center justify-center rounded-pill border border-line bg-background transition-colors hover:border-foreground/60 hover:text-foreground"
           >
             <ArrowDown aria-hidden="true" strokeWidth={1.5} className="size-4" />
           </a>
