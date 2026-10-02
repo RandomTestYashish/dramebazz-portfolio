@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 
+import { profile } from "@/content";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { Portrait } from "./portrait";
 
 // PLACEHOLDER copy: rewrite in your own voice.
 const STATEMENT =
@@ -25,7 +27,14 @@ export function About(): ReactNode {
           title={STATEMENT}
           className="md:col-span-11 lg:col-span-10"
         />
-        <div className="flex flex-col gap-6 md:col-span-8 md:col-start-5 lg:col-span-5 lg:col-start-7">
+        <Reveal className="w-2/3 md:col-span-5 md:w-full lg:col-span-4">
+          <Portrait
+            src={profile.portrait.src}
+            hoverSrc={profile.portrait.hoverSrc}
+            alt={profile.portrait.alt}
+          />
+        </Reveal>
+        <div className="flex flex-col gap-6 md:col-span-7 md:col-start-6 md:self-end lg:col-span-5 lg:col-start-7">
           {APPROACH.map((paragraph, i) => (
             <Reveal key={paragraph} delay={i * 0.08}>
               <p

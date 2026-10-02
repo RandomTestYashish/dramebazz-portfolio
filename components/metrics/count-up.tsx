@@ -22,11 +22,16 @@ export function CountUp({ value, decimals = 0 }: CountUpProps): ReactNode {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.6 });
   const reduce = useReducedMotion();
-  const count = useMotionValue(reduce ? value : 0);
+  // Always start from 0 so server and client render the same text.
+  const count = useMotionValue(0);
   const display = useTransform(count, (v) => v.toFixed(decimals));
 
   useEffect(() => {
-    if (!inView || reduce) return;
+    if (reduce) {
+      count.set(value);
+      return;
+    }
+    if (!inView) return;
     const controls = animate(count, value, { duration: 1.6, ease: ease.out });
     return () => controls.stop();
   }, [inView, reduce, count, value]);

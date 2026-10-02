@@ -20,7 +20,20 @@ const SECTION_IDS = NAV_ITEMS.map((item) => item.id);
 export function Nav(): ReactNode {
   const active = useActiveSection(SECTION_IDS);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [overHero, setOverHero] = useState(true);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Take the hero's dark palette while the hero sits under the nav band.
+  useEffect(() => {
+    const hero = document.getElementById("top");
+    if (!hero) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setOverHero(entry?.isIntersecting ?? false),
+      { rootMargin: "0px 0px -92% 0px" }
+    );
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -40,11 +53,15 @@ export function Nav(): ReactNode {
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-(--z-nav)"
+      className={`fixed inset-x-0 top-0 z-(--z-nav) transition-colors duration-500 ${
+        overHero ? "on-dark" : ""
+      }`}
       // Solid at the top edge, fading out, so content passes under quietly.
       style={{
         background:
-          "linear-gradient(to bottom, var(--background) 55%, transparent)",
+          overHero
+            ? "linear-gradient(to bottom, rgb(8 8 8 / 0.35), transparent)"
+            : "linear-gradient(to bottom, var(--background) 55%, transparent)",
       }}
     >
       <nav

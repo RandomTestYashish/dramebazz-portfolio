@@ -40,7 +40,7 @@ Project layouts are assigned by position (feature, tall, offset, wide, compact),
 Every image has a fixed path. Drop a real file in with the same name and it just works.
 
 ```
-public/portrait/portrait.webp       4:5, shown at rest
+public/portrait/portrait.webp       4:5, About section, shown at rest
 public/portrait/portrait-alt.webp   same framing, revealed by the hover morph
 public/projects/project-01.webp     16:9 or wider (feature)
 public/projects/project-02.webp     4:5 (tall)
@@ -63,7 +63,20 @@ Tokens are in `app/globals.css` (colour, type scale, spacing, radius, motion, z-
 - **Colour:** warm white / near-black monochrome with one vermilion accent, used only for emphasis and live state. Light and dark themes follow the system and can be toggled.
 - **Type:** Geist and Geist Mono. Fluid scale: `text-display`, `text-h2`, `text-h3`, `text-figure`, `text-lead`, `text-meta`.
 - **Shape:** media uses a 3px radius, interactive controls are full pills. Nothing in between.
-- **Motion:** one easing curve (`--ease-out`). Reveals on scroll, a masked headline reveal, magnetic email, pointer-drift on project images, portrait tilt and WebGL morph on fine pointers only. Everything respects `prefers-reduced-motion`.
+- **Motion:** one easing curve (`--ease-out`). Reveals on scroll, a masked headline reveal, magnetic email, pointer-drift on project images, and a WebGL hover morph on the About portrait (fine pointers only). Everything respects `prefers-reduced-motion`.
+
+## Hero canyon
+
+The hero background is `components/shaders/ravine.tsx`, an original ray-marched canyon whose props mirror React Bits Pro's Ravine (`speed`, `steps`, `fov`, `nearColor`, ...). If you buy React Bits Pro you can swap the official component into `components/hero/hero-atmosphere.tsx` without other changes.
+
+Settings live in `hero-atmosphere.tsx`:
+
+- Desktop: 96 ray-march steps, full resolution, speed 0.1. Mobile: 48 steps, 75% resolution, speed 0.08.
+- If frames run slow, it steps quality down twice, then holds a still frame.
+- It stops rendering when the hero is off-screen or the tab is hidden.
+- Reduced motion shows one still frame. Without WebGL, a static graphite gradient shows instead.
+
+The hero is a dark surface in both themes (`.on-dark`), and fades into the page through `.hero-fade`.
 
 ## Structure
 
@@ -71,8 +84,8 @@ Tokens are in `app/globals.css` (colour, type scale, spacing, radius, motion, z-
 app/            layout, page, globals.css, sitemap, robots, icons
 components/
   navigation/   fixed nav, scroll-spy, theme toggle, mobile menu
-  hero/         hero, portrait (tilt + WebGL morph)
-  about/        editorial statement
+  hero/         hero copy and the canyon atmosphere
+  about/        editorial statement, portrait with WebGL morph
   projects/     selected work grid and cards
   experience/   timeline
   capabilities/ capabilities and tools
@@ -81,7 +94,7 @@ components/
   contact/      contact section, copy-to-clipboard email
   footer/
   layout/       providers, smooth scroll, skip link
-  shaders/      WebGL flow shader (contact background)
+  shaders/      Ravine canyon (hero), flow shader (contact background)
   ui/           Reveal, SplitReveal, Magnetic, ArrowLink, SectionHeading
 content/        all editable content
 lib/            metadata, tokens, hooks

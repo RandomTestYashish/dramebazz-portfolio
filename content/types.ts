@@ -1,10 +1,9 @@
 export type Profile = {
   name: string;
   role: string;
-  /** Short line shown as the hero eyebrow. */
+  /** Disciplines line under the hero headline. */
   discipline: string;
   headline: { lead: string; emphasis: string };
-  intro: string;
   currently: string;
   availability: { open: boolean; label: string };
   email: string;

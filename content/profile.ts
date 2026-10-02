@@ -4,10 +4,11 @@ import type { Profile } from "./types";
 export const profile: Profile = {
   name: "Dramebazz",
   role: "Product Designer",
-  discipline: "Product Designer / Design Engineer",
-  headline: { lead: "Making complex things feel", emphasis: "simple." },
-  intro:
-    "Product designer focused on thoughtful experiences, systems and interactions for products used by millions.",
+  discipline: "Product design · UX · Systems · Interaction",
+  headline: {
+    lead: "I design digital products that make complex things feel",
+    emphasis: "simple.",
+  },
   currently: "Lead Product Designer at Airtel Digital",
   availability: { open: true, label: "Open to opportunities" },
   email: "hello@example.com",

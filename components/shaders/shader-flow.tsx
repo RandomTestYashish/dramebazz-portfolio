@@ -138,12 +138,17 @@ export function ShaderFlow(props: ShaderFlowProps): ReactNode {
     const el = ref.current;
     if (!el) return;
 
-    const r = new Renderer({
-      dpr: Math.min(window.devicePixelRatio || 1, 1),
-      alpha: false,
-      antialias: false,
-      powerPreference: "high-performance",
-    });
+    let r: Renderer;
+    try {
+      r = new Renderer({
+        dpr: Math.min(window.devicePixelRatio || 1, 1),
+        alpha: false,
+        antialias: false,
+        powerPreference: "high-performance",
+      });
+    } catch {
+      return; // No WebGL: the section simply shows its plain background.
+    }
     const gl = r.gl;
     gl.canvas.style.width = "100%";
     gl.canvas.style.height = "100%";

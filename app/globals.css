@@ -19,7 +19,9 @@
   --accent: #d9431b;
   --accent-soft: rgb(217 67 27 / 0.12);
   --ring: var(--accent);
-
+  /* The page ground. Unlike --background it is not overridden by .on-dark,
+     so a dark surface can fade back into the page. */
+  --canvas: var(--background);
 
   --gutter: clamp(1rem, 0.55rem + 2.4vw, 2.5rem);
   --section-space: clamp(6rem, 3.5rem + 9vw, 11rem);
@@ -38,7 +40,9 @@
   --z-skip: 100;
 }
 
-.dark {
+/* .on-dark forces the dark palette on one surface (the hero) in either theme. */
+.dark,
+.on-dark {
   --background: #111110;
   --surface: #1c1c1a;
   --foreground: #ecebe6;
@@ -46,6 +50,11 @@
   --line: rgb(236 235 230 / 0.14);
   --accent: #ff6a3d;
   --accent-soft: rgb(255 106 61 / 0.14);
+}
+
+.on-dark {
+  color: var(--foreground);
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -67,6 +76,10 @@
   --text-display: clamp(2.75rem, 1.4rem + 6vw, 8rem);
   --text-display--line-height: 0.94;
   --text-display--letter-spacing: -0.045em;
+  /* Hero headline: a long sentence, so a step below display. */
+  --text-hero: clamp(2.625rem, 1.2rem + 4.6vw, 6rem);
+  --text-hero--line-height: 0.98;
+  --text-hero--letter-spacing: -0.04em;
   --text-h2: clamp(1.875rem, 1.2rem + 3vw, 4.5rem);
   --text-h2--line-height: 1;
   --text-h2--letter-spacing: -0.035em;
@@ -272,4 +285,30 @@ html[data-theme-anim="1"]::view-transition-new(root) {
     grid-template-rows: 1fr;
     opacity: 1;
   }
+}
+
+/* Hero atmosphere ---------------------------------------------------------- */
+
+/* Shown until the canyon renders, and instead of it without WebGL. */
+.ravine-fallback {
+  background: radial-gradient(circle at 62% 62%, #343432 0%, #121211 48%, #070707 100%);
+}
+
+/* Keeps type readable over the canyon: darker at the top for the nav,
+   a soft pool behind the copy, deeper at the foot. */
+.hero-overlay {
+  background:
+    linear-gradient(90deg, rgb(8 8 8 / 0.55) 0%, rgb(8 8 8 / 0.2) 55%, rgb(8 8 8 / 0) 100%),
+    linear-gradient(180deg, rgb(8 8 8 / 0.5) 0%, rgb(8 8 8 / 0.1) 45%, rgb(8 8 8 / 0.45) 100%);
+}
+
+/* Dissolves the dark hero into the page below, in either theme. */
+.hero-fade {
+  background: linear-gradient(
+    180deg,
+    rgb(8 8 8 / 0) 0%,
+    color-mix(in srgb, var(--canvas) 18%, transparent) 40%,
+    color-mix(in srgb, var(--canvas) 70%, transparent) 75%,
+    var(--canvas) 100%
+  );
 }
