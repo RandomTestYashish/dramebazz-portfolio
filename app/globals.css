@@ -3834,3 +3834,42 @@ body[class] {
 .bento[data-intro="playing"] .dock > * {
   animation-play-state: paused;
 }
+
+/* ===========================================================================
+ * grid-v2: a new arrangement. The player is a tall column on the right; on
+ * the left, a wide intro, two square work tiles, and a wide AI tile.
+ * ======================================================================== */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento-grid {
+    height: max(600px, min(calc(100dvh - 200px), 56vw));
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.15fr);
+    grid-template-rows: minmax(min-content, 0.85fr) minmax(0, 1.15fr) minmax(0, 0.9fr);
+    grid-template-areas:
+      "intro   intro  person"
+      "product motion person"
+      "ai      ai     person";
+  }
+  .bento-hero .device-screen-hero {
+    min-height: 200px;
+  }
+}
+
+/* Background grid: visible again on the grey page, fading at the edges. */
+.bento::before {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 0 0 / 0.075) 1px, transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 50%, #000 0%, rgb(0 0 0 / 0.6) 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 60% 70% at 50% 50%, #000 0%, rgb(0 0 0 / 0.6) 55%, transparent 100%);
+}
+.bento:not([data-theme="dark"])::before {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 0 0 / 0.075) 1px, transparent 1px);
+}
+.bento[data-theme="dark"]::before {
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.07) 1px, transparent 1px);
+}

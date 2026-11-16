@@ -2,12 +2,15 @@
 
 import {
   ArrowUpRight,
+  Layers,
   Moon,
   Pause,
   Play,
+  Sparkles,
   Sun,
   Volume2,
   VolumeX,
+  type LucideIcon,
 } from "lucide-react";
 import { AnimatePresence, motion as m } from "motion/react";
 import Image from "next/image";
@@ -26,7 +29,6 @@ import { PanelSheet } from "@/components/scene/panel-sheet";
 import { panels, type PanelId } from "@/content/scene";
 import { DotMatrix } from "./dot-matrix";
 import { Ambient } from "./ambient";
-import { GlassArt, type GlassKind } from "./glass-art";
 import { Intro, ROLE_ID } from "./intro";
 import { applySquircles, nativeSquircle } from "./squircle";
 
@@ -79,11 +81,11 @@ function SquircleEdge(): ReactNode {
   );
 }
 
-/** Each tile carries one 3D glass illustration. */
-const WORK: { id: PanelId & GlassKind }[] = [
-  { id: "product" },
-  { id: "motion" },
-  { id: "ai" },
+/** Each tile carries one icon, drawn in animated accent dots. */
+const WORK: { id: PanelId; icon: LucideIcon }[] = [
+  { id: "product", icon: Layers },
+  { id: "motion", icon: Play },
+  { id: "ai", icon: Sparkles },
 ];
 
 const SOUND_KEY = "bento-sound";
@@ -359,6 +361,47 @@ export function Bento(): ReactNode {
         </div>
       </div>
 
+      {/* Dot fill shared by the tile icons. */}
+      <svg aria-hidden="true" width="0" height="0" className="absolute">
+        <defs>
+          <pattern
+            id="bento-dot-fill"
+            width="0.56"
+            height="0.56"
+            patternUnits="userSpaceOnUse"
+          >
+            <circle cx="0.28" cy="0.28" r="0.2" className="bento-dot-fill" />
+            {/* Dots stream through the strokes like a marquee sign. */}
+            {reduceMotion ? null : (
+              <animateTransform
+                attributeName="patternTransform"
+                type="translate"
+                from="0 0"
+                to="0.56 0"
+                dur="0.7s"
+                repeatCount="indefinite"
+              />
+            )}
+          </pattern>
+          {/* The accent gradient, slowly turning. Icons are masks over it. */}
+          <linearGradient id="bento-accent-grad" x1="0" y1="0" x2="0.6" y2="1">
+            <stop offset="0" stopColor="#ff9a3c" />
+            <stop offset="0.38" stopColor="#ff4f8b" />
+            <stop offset="0.7" stopColor="#b05cff" />
+            <stop offset="1" stopColor="#7b3cff" />
+            {reduceMotion ? null : (
+              <animateTransform
+                attributeName="gradientTransform"
+                type="rotate"
+                values="0 0.5 0.5;40 0.5 0.5;-30 0.5 0.5;0 0.5 0.5"
+                dur="9s"
+                repeatCount="indefinite"
+              />
+            )}
+          </linearGradient>
+        </defs>
+      </svg>
+
       <div
         className="bento-grid"
         onPointerMove={onTilt}
@@ -437,6 +480,7 @@ export function Bento(): ReactNode {
         {/* Work */}
         {WORK.map((w, i) => {
           const panel = panels[w.id];
+          const Icon = w.icon;
           return (
             <button
               key={w.id}
@@ -454,7 +498,32 @@ export function Bento(): ReactNode {
                 <span className="bento-h3">{panel.title}</span>
                 <span className="bento-p">{firstLine(panel.intro)}</span>
               </span>
-              <GlassArt kind={w.id} />
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="bento-icon">
+                <mask
+                  id={`bento-icon-mask-${w.id}`}
+                  maskUnits="userSpaceOnUse"
+                  x="-2"
+                  y="-2"
+                  width="28"
+                  height="28"
+                >
+                  <Icon
+                    width={24}
+                    height={24}
+                    stroke="url(#bento-dot-fill)"
+                    strokeWidth={2.6}
+                    className={`bento-icon-${w.id}`}
+                  />
+                </mask>
+                <rect
+                  x="-2"
+                  y="-2"
+                  width="28"
+                  height="28"
+                  fill="url(#bento-accent-grad)"
+                  mask={`url(#bento-icon-mask-${w.id})`}
+                />
+              </svg>
               <span className="bento-arrow" aria-hidden="true">
                 <ArrowUpRight strokeWidth={2.4} className="size-4" />
               </span>
