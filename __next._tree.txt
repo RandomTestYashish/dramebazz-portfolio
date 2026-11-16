@@ -1,0 +1,12 @@
+:HL["/dramebazz-portfolio/_next/static/chunks/df3cf912a8a66e4c.css","style"]
+:HL["/dramebazz-portfolio/_next/static/media/0c8c4ded07fff55c-s.p.5c4452a7.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/dramebazz-portfolio/_next/static/media/0e54dc4a88da75bb-s.p.b44d99ab.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/dramebazz-portfolio/_next/static/media/0fcab32fcfb2da9d-s.p.52f9b6c9.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/dramebazz-portfolio/_next/static/media/47fe1b7cd6e6ed85-s.p.855a563b.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/dramebazz-portfolio/_next/static/media/797e433ab948586e-s.p.29207c2f.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/dramebazz-portfolio/_next/static/media/8e6fa89aa22d24ec-s.p.3aec397d.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/dramebazz-portfolio/_next/static/media/970c428219233a3d-s.p.feb96725.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/dramebazz-portfolio/_next/static/media/caa3a2e1cccd8315-s.p.3b6cae6d.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/dramebazz-portfolio/_next/static/media/e2334d715941921e-s.p.d82a9aff.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["https://use.typekit.net/fev1wov.css","style"]
+0:{"buildId":"MUCxWsjNeBqT6dfgEJxrP","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":true},"staleTime":300}

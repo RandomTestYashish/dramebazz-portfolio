@@ -1,0 +1,9 @@
+{
+  "name": "Dramebazz | Product Designer",
+  "short_name": "Dramebazz",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1f0ec",
+  "theme_color": "#151514",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
