@@ -1,26 +1,27 @@
 "use client";
 
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import type { ReactNode } from "react";
 
-export type IntroPhase = "hello" | "line" | "done";
+export type IntroPhase = "hi" | "name" | "role" | "done";
 
-/** Shared layout ids: these two pieces fly from the intro into the title. */
-export const NAME_ID = "title-name";
+/** Shared layout id: the role flies from the intro into the page title. */
 export const ROLE_ID = "title-role";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-const word = (i: number) => ({
-  initial: { opacity: 0, y: 18, filter: "blur(8px)" },
+/** Each line rises in out of a blur and drifts up and away. */
+const line = {
+  initial: { opacity: 0, y: 16, filter: "blur(8px)" },
   animate: { opacity: 1, y: 0, filter: "blur(0px)" },
-  transition: { duration: 0.55, ease: EASE, delay: i * 0.08 },
-});
+  exit: { opacity: 0, y: -16, filter: "blur(8px)" },
+  transition: { duration: 0.5, ease: EASE },
+} as const;
 
 /**
- * Loading intro. The page background fills the screen and a sentence types
- * itself in: "Hello," first, then the rest. When it ends, the name and the
- * role keep their layout ids so they glide into the page title.
+ * Loading intro over the page background, one short line at a time:
+ * "Hi" → "My name is Yashish" → "I am a Product and Motion Designer".
+ * The last line's role keeps a layout id, so it settles into the title.
  */
 export function Intro({
   phase,
@@ -29,9 +30,6 @@ export function Intro({
   phase: IntroPhase;
   onSkip: () => void;
 }): ReactNode {
-  const lead = ["my", "name", "is"];
-  const mid = ["and", "I", "am", "a"];
-
   return (
     <motion.div
       className="intro"
@@ -39,49 +37,26 @@ export function Intro({
       onClick={onSkip}
       exit={{ opacity: 0, transition: { duration: 0.6, ease: EASE } }}
     >
-      <p className="intro-text">
-        <motion.span
-          className="intro-hello"
-          initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.8, ease: EASE, delay: 0.2 }}
-        >
-          Hello,
-        </motion.span>{" "}
-        {phase === "line" ? (
-          <>
-            {lead.map((w, i) => (
-              <motion.span key={w} className="intro-word" {...word(i)}>
-                {w}{" "}
-              </motion.span>
-            ))}
-            <motion.span
-              layoutId={NAME_ID}
-              className="intro-name wordmark"
-              {...word(lead.length)}
-            >
-              YASHISH
-            </motion.span>{" "}
-            {mid.map((w, i) => (
-              <motion.span
-                key={w}
-                className="intro-word"
-                {...word(lead.length + 1 + i)}
-              >
-                {w}{" "}
-              </motion.span>
-            ))}
-            {/* The full stop rides inside the role so it never wraps alone. */}
-            <motion.span
-              layoutId={ROLE_ID}
-              className="intro-role"
-              {...word(lead.length + 1 + mid.length)}
-            >
-              Product and Motion Designer.
-            </motion.span>
-          </>
+      <AnimatePresence mode="wait">
+        {phase === "hi" ? (
+          <motion.p key="hi" className="intro-text" {...line}>
+            <span className="intro-hello">Hi</span>
+          </motion.p>
         ) : null}
-      </p>
+        {phase === "name" ? (
+          <motion.p key="name" className="intro-text" {...line}>
+            My name is <span className="intro-name">Yashish</span>
+          </motion.p>
+        ) : null}
+        {phase === "role" ? (
+          <motion.p key="role" className="intro-text" {...line}>
+            I am a{" "}
+            <motion.span layoutId={ROLE_ID} className="intro-role">
+              Product and Motion Designer
+            </motion.span>
+          </motion.p>
+        ) : null}
+      </AnimatePresence>
       <span className="intro-skip">Tap to skip</span>
     </motion.div>
   );

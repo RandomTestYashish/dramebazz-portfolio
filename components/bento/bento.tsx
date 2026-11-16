@@ -26,7 +26,7 @@ import {
 import { PanelSheet } from "@/components/scene/panel-sheet";
 import { panels, type PanelId } from "@/content/scene";
 import { DotMatrix } from "./dot-matrix";
-import { Intro, NAME_ID, ROLE_ID, type IntroPhase } from "./intro";
+import { Intro, ROLE_ID, type IntroPhase } from "./intro";
 import { applySquircles, nativeSquircle } from "./squircle";
 
 type OpenFn = (id: PanelId, from: HTMLElement) => void;
@@ -103,7 +103,7 @@ const delay = (i: number): CSSProperties =>
 
 export function Bento(): ReactNode {
   const [open, setOpen] = useState<PanelId | null>(null);
-  const [phase, setPhase] = useState<IntroPhase>("hello");
+  const [phase, setPhase] = useState<IntroPhase>("hi");
   const returnFocus = useRef<HTMLElement | null>(null);
   const theme = useSyncExternalStore(subscribeTheme, readTheme, serverTheme);
   const reduceMotion = useSyncExternalStore(subscribeReduce, readReduce, serverReduce);
@@ -184,14 +184,18 @@ export function Bento(): ReactNode {
     tilted.current = null;
   };
 
-  // Intro timeline: "Hello," → the full line → it settles into the title.
+  // Intro timeline: "Hi" → "My name is Yashish" → the role, which then
+  // settles into the title. A skip jumps straight to "done".
   useEffect(() => {
     const quick = window.matchMedia(REDUCE_QUERY).matches;
+    const step = (from: IntroPhase, to: IntroPhase) => () =>
+      setPhase((p) => (p === from ? to : p));
     const timers = quick
       ? [window.setTimeout(() => setPhase("done"), 0)]
       : [
-          window.setTimeout(() => setPhase((p) => (p === "hello" ? "line" : p)), 1100),
-          window.setTimeout(() => setPhase("done"), 3500),
+          window.setTimeout(step("hi", "name"), 1300),
+          window.setTimeout(step("name", "role"), 2700),
+          window.setTimeout(step("role", "done"), 4100),
         ];
     return () => timers.forEach((t) => window.clearTimeout(t));
   }, []);
@@ -222,7 +226,12 @@ export function Bento(): ReactNode {
       <header className="bento-title">
         <h1>
           {phase === "done" ? (
-            <m.span layoutId={NAME_ID} transition={SETTLE} className="wordmark">
+            <m.span
+              className="wordmark"
+              initial={{ opacity: 0, y: 14, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ ...SETTLE, delay: 0.15 }}
+            >
               YASHISH
             </m.span>
           ) : (
@@ -347,20 +356,14 @@ export function Bento(): ReactNode {
           <SquircleEdge />
         </section>
 
-        {/* Centre: a retro player. LCD strip, dot screen, three dials. */}
+        {/* Centre: a retro player. Photo screen on top, the player strip
+            below it, and a full-width About me button at the foot. */}
         <section
           aria-label="About Yashish"
           className="bento-card bento-device bento-hero enter"
           style={{ gridArea: "person", ...delay(2) }}
         >
-          <PlayerDisplay playing={motion !== 2} dials={dials} />
-          <button
-            type="button"
-            aria-haspopup="dialog"
-            aria-label="About Yashish Kpur"
-            onClick={(e) => openPanel("about", e.currentTarget)}
-            className="device-screen device-screen-hero"
-          >
+          <div className="device-screen device-screen-hero">
             <DotMatrix
               srcs={PHOTOS}
               density={density}
@@ -378,10 +381,18 @@ export function Bento(): ReactNode {
               draggable={false}
               className="dot-fallback"
             />
-            <span className="bento-about-pill">
-              About me
-              <ArrowUpRight aria-hidden="true" className="size-4" />
-            </span>
+          </div>
+
+          <PlayerDisplay playing={motion !== 2} dials={dials} />
+
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            onClick={(e) => openPanel("about", e.currentTarget)}
+            className="bento-about-pill bento-about-cta"
+          >
+            About me
+            <ArrowUpRight aria-hidden="true" className="size-4" />
           </button>
 
           <SquircleEdge />

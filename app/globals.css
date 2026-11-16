@@ -3428,3 +3428,134 @@ body[class] {
   --font-geist-sans: var(--font-wordmark);
   font-family: var(--font-wordmark);
 }
+
+/* ===========================================================================
+ * Pass: Neotype spacing, a smaller title, a calmer centre card, new intro.
+ * ======================================================================== */
+
+/* Neotype is wide and unicase: Poppins' negative tracking crushed it. */
+body[class] {
+  letter-spacing: 0.012em;
+  word-spacing: 0.08em;
+}
+.bento-statement,
+.bento-h3,
+.bento-name,
+.bento-h1,
+.bento-quote,
+.intro-text,
+.bento-title p {
+  letter-spacing: 0.01em;
+}
+.bento-statement {
+  line-height: 1.3;
+}
+.bento-p {
+  line-height: 1.5;
+}
+
+/* Title: smaller wordmark. */
+.bento-title h1 {
+  font-size: clamp(2.6rem, 12vw, 3.25rem);
+  letter-spacing: 0.02em;
+}
+@media (min-width: 640px) {
+  .bento-title h1 {
+    font-size: clamp(3rem, 6vw, 4rem);
+  }
+}
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento-title h1 {
+    font-size: clamp(3.2rem, 4.4vw, 4.6rem);
+  }
+  .bento-title {
+    gap: 4px;
+    padding-bottom: 10px;
+  }
+  .bento-grid {
+    height: max(540px, min(calc(100dvh - 200px), 54vw));
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr);
+    grid-template-rows: minmax(150px, 0.9fr) minmax(0, 1.75fr) minmax(150px, 0.9fr);
+  }
+  /* Centre card back to its own cell, no oversized lift. */
+  .bento-hero {
+    scale: none;
+    padding: 10px;
+    gap: 8px;
+  }
+}
+
+/* Centre card: photo screen on top, player under it, full-width CTA. */
+.bento-hero .device-screen-hero {
+  order: 0;
+  flex: 1 1 auto;
+  min-height: 140px;
+  cursor: default;
+}
+.bento-hero .lcd {
+  order: 1;
+}
+.bento-about-cta {
+  order: 2;
+  position: static;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  flex: none;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 14px;
+  corner-shape: squircle;
+  cursor: pointer;
+}
+.bento-hero .bento-about-cta {
+  right: auto;
+  bottom: auto;
+  padding: 0 16px;
+  font-size: 1.05rem;
+}
+.bento-hero .bento-about-cta svg {
+  width: 16px;
+  height: 16px;
+}
+.bento-about-cta:hover {
+  translate: 0 -1px;
+}
+.bento-about-cta:active {
+  scale: 0.99;
+}
+
+/* Intro: small, one line at a time. */
+.bento {
+  --intro-delay: 4400ms;
+}
+.intro {
+  animation-delay: 7.5s;
+}
+.title-wait {
+  animation-delay: 7.5s;
+}
+.intro-text {
+  position: absolute;
+  max-width: min(90vw, 34ch);
+  font-size: clamp(1.4rem, 2.6vw, 2.4rem);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--muted);
+}
+.intro-hello {
+  font-size: 1.3em;
+}
+.intro-name,
+.intro-role {
+  color: var(--ink);
+}
+@media (min-width: 1024px) and (min-height: 600px) {
+  /* The centre card needs room for screen + player + CTA; short screens scroll. */
+  .bento-grid {
+    height: max(640px, min(calc(100dvh - 200px), 54vw));
+    grid-template-rows: minmax(130px, 0.9fr) minmax(360px, 1.75fr) minmax(130px, 0.9fr);
+  }
+}
