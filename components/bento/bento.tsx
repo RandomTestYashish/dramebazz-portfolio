@@ -94,7 +94,7 @@ const DENSITY_LABEL = ["High", "Ultra", "Medium"] as const;
 const TONE_LABEL = ["Ink", "Accent", "Duo"] as const;
 
 /** Photos on the player screen, switched in a loop by the dots. */
-const PHOTOS = ["/scene/photo-1.webp", "/scene/photo-2.webp"];
+const PHOTOS = ["/scene/photo-3.webp", "/scene/photo-1.webp", "/scene/photo-2.webp"];
 
 const SETTLE = { duration: 0.9, ease: [0.22, 1, 0.36, 1] } as const;
 
@@ -372,9 +372,9 @@ export function Bento(): ReactNode {
               theme={current}
             />
             <Image
-              src="/scene/photo-1.webp"
+              src="/scene/photo-3.webp"
               alt="Yashish Kpur"
-              width={546}
+              width={640}
               height={640}
               priority
               unoptimized
