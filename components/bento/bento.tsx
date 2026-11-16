@@ -26,6 +26,7 @@ import {
 } from "react";
 
 import { PanelSheet } from "@/components/scene/panel-sheet";
+import { asset } from "@/lib/asset";
 import { panels, type PanelId } from "@/content/scene";
 import { DotMatrix } from "./dot-matrix";
 import { Ambient } from "./ambient";
@@ -100,9 +101,9 @@ const TONE_LABEL = ["Ink", "Accent", "Duo"] as const;
 
 /** Photos on the player screen, switched in a loop by the dots. */
 const PHOTOS = [
-  "/scene/photo-3.webp",
-  "/scene/photo-1.webp",
-  "/scene/photo-2.webp",
+  asset("/scene/photo-3.webp"),
+  asset("/scene/photo-1.webp"),
+  asset("/scene/photo-2.webp"),
 ];
 
 const SETTLE = { duration: 0.9, ease: [0.22, 1, 0.36, 1] } as const;
@@ -451,7 +452,7 @@ export function Bento(): ReactNode {
               theme={current}
             />
             <Image
-              src="/scene/photo-3.webp"
+              src={asset("/scene/photo-3.webp")}
               alt="Yashish Kpur"
               width={560}
               height={560}

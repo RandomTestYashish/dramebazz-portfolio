@@ -65,7 +65,7 @@ export const baseMetadata: Metadata = {
     images: [siteConfig.ogImage],
     creator: siteConfig.creator,
   },
-  manifest: "/site.webmanifest",
+  manifest: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/site.webmanifest`,
 };
 
 export function personJsonLd(sameAs: string[]): Record<string, unknown> {
