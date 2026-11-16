@@ -36,22 +36,6 @@ const HOLD_MS = 1800;
 /** Wipe speed per frame (~30fps, so about half a second per switch). */
 const WIPE_STEP = 0.06;
 
-/** One pass of the colour sweep, and its half-width across the screen. */
-const SWEEP_MS = 3400;
-const SWEEP_WIDTH = 0.16;
-
-/** Inside the band core every dot lights; towards its edges fewer do, so
- *  the sweep reads as soft light rather than a hard stripe. */
-const sweepHit = (band: number, i: number): boolean => {
-  const d = band < 0 ? -band : band;
-  if (d >= SWEEP_WIDTH) return false;
-  const edge = d / SWEEP_WIDTH;
-  if (edge < 0.45) return true;
-  // Cheap stable per-dot noise in [0, 1).
-  const n = ((i * 2654435761) >>> 0) / 4294967296;
-  return n > (edge - 0.45) / 0.55;
-};
-
 /** How strongly the dots move for Breathe, Wave and Still. */
 const MOTION_AMP = [0.08, 0.32, 0] as const;
 
@@ -207,9 +191,6 @@ export function DotMatrix({
       let nAccent = 0;
       let nIdle = 0;
       const t = now * 0.0021;
-      // Colour sweep: a diagonal band of accent light keeps passing over the
-      // black-and-white photo to highlight it (Ink tone only).
-      const sweep = reduce || s.motion === 2 ? -9 : ((now % SWEEP_MS) / SWEEP_MS) * 1.7 - 0.35;
 
       for (let y = 0; y < rows; y++) {
         const cy = oy + y * sp;
@@ -244,13 +225,12 @@ export function DotMatrix({
             }
             continue;
           }
-          const band = (x / cols) * 0.65 + (y / rows) * 0.35 - sweep;
           const useAccent =
             s.tone === 1
               ? true
               : s.tone === 2
                 ? v < 0.62
-                : sweepHit(band, i);
+                : false;
           if (useAccent) {
             bufAccent[nAccent++] = cx;
             bufAccent[nAccent++] = cy;
