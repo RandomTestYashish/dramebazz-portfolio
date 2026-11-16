@@ -2,13 +2,12 @@
 
 import {
   ArrowUpRight,
-  Layers,
   Moon,
   Pause,
   Play,
-  Sparkles,
   Sun,
-  type LucideIcon,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { AnimatePresence, motion as m } from "motion/react";
 import Image from "next/image";
@@ -26,7 +25,9 @@ import {
 import { PanelSheet } from "@/components/scene/panel-sheet";
 import { panels, type PanelId } from "@/content/scene";
 import { DotMatrix } from "./dot-matrix";
-import { Intro, ROLE_ID, type IntroPhase } from "./intro";
+import { Ambient } from "./ambient";
+import { GlassArt, type GlassKind } from "./glass-art";
+import { Intro, ROLE_ID } from "./intro";
 import { applySquircles, nativeSquircle } from "./squircle";
 
 type OpenFn = (id: PanelId, from: HTMLElement) => void;
@@ -78,12 +79,14 @@ function SquircleEdge(): ReactNode {
   );
 }
 
-/** Each tile carries one icon, drawn in dots (same language as the screen). */
-const WORK: { id: PanelId; icon: LucideIcon }[] = [
-  { id: "product", icon: Layers },
-  { id: "motion", icon: Play },
-  { id: "ai", icon: Sparkles },
+/** Each tile carries one 3D glass illustration. */
+const WORK: { id: PanelId & GlassKind }[] = [
+  { id: "product" },
+  { id: "motion" },
+  { id: "ai" },
 ];
+
+const SOUND_KEY = "bento-sound";
 
 /** First sentence of a panel intro, as a card description. */
 const firstLine = (text: string): string => text.split(/(?<=\.)\s/)[0] ?? text;
@@ -94,7 +97,11 @@ const DENSITY_LABEL = ["High", "Ultra", "Medium"] as const;
 const TONE_LABEL = ["Ink", "Accent", "Duo"] as const;
 
 /** Photos on the player screen, switched in a loop by the dots. */
-const PHOTOS = ["/scene/photo-3.webp", "/scene/photo-1.webp", "/scene/photo-2.webp"];
+const PHOTOS = [
+  "/scene/photo-3.webp",
+  "/scene/photo-1.webp",
+  "/scene/photo-2.webp",
+];
 
 const SETTLE = { duration: 0.9, ease: [0.22, 1, 0.36, 1] } as const;
 
@@ -103,10 +110,16 @@ const delay = (i: number): CSSProperties =>
 
 export function Bento(): ReactNode {
   const [open, setOpen] = useState<PanelId | null>(null);
-  const [phase, setPhase] = useState<IntroPhase>("hi");
+  const [introDone, setIntroDone] = useState(false);
+  const [sound, setSound] = useState(false);
+  const ambient = useRef<Ambient | null>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
   const theme = useSyncExternalStore(subscribeTheme, readTheme, serverTheme);
-  const reduceMotion = useSyncExternalStore(subscribeReduce, readReduce, serverReduce);
+  const reduceMotion = useSyncExternalStore(
+    subscribeReduce,
+    readReduce,
+    serverReduce
+  );
   const rootRef = useRef<HTMLDivElement>(null);
   const tilted = useRef<HTMLElement | null>(null);
   const [density, setDensity] = useState(0);
@@ -171,8 +184,14 @@ export function Bento(): ReactNode {
     tilted.current = card;
     if (!card) return;
     const r = card.getBoundingClientRect();
-    const nx = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
-    const ny = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
+    const nx = Math.max(
+      -1,
+      Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1)
+    );
+    const ny = Math.max(
+      -1,
+      Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1)
+    );
     // Big cards lean less, so their far edge never swings too far.
     const max = Math.min(10, 2400 / r.width);
     card.style.setProperty("--rx", `${(-ny * max).toFixed(2)}deg`);
@@ -184,22 +203,73 @@ export function Bento(): ReactNode {
     tilted.current = null;
   };
 
-  // Intro timeline: "Hi" → "My name is Yashish" → the role, which then
-  // settles into the title. A skip jumps straight to "done".
+  // The typewriter intro reports when it is done; reduced motion skips it.
+  const finishIntro = useCallback(() => setIntroDone(true), []);
   useEffect(() => {
-    const quick = window.matchMedia(REDUCE_QUERY).matches;
-    const step = (from: IntroPhase, to: IntroPhase) => () =>
-      setPhase((p) => (p === from ? to : p));
-    const timers = quick
-      ? [window.setTimeout(() => setPhase("done"), 0)]
-      : [
-          window.setTimeout(step("hi", "name"), 1300),
-          window.setTimeout(step("name", "role"), 2700),
-          window.setTimeout(step("role", "done"), 4100),
-        ];
-    return () => timers.forEach((t) => window.clearTimeout(t));
+    if (!window.matchMedia(REDUCE_QUERY).matches) return;
+    const t = window.setTimeout(finishIntro, 0);
+    return () => window.clearTimeout(t);
+  }, [finishIntro]);
+  const phase = introDone ? "done" : "playing";
+
+  /* Background music: generated live, off until the visitor turns it on.
+     Browsers only allow sound after a gesture, so a saved "on" resumes on
+     the first tap or key press. */
+  const toggleSound = useCallback((next: boolean) => {
+    if (!ambient.current) ambient.current = new Ambient();
+    if (next) ambient.current.start();
+    else ambient.current.stop();
+    setSound(next);
+    try {
+      window.localStorage.setItem(SOUND_KEY, next ? "on" : "off");
+    } catch {
+      // Storage blocked: the toggle still works for this visit.
+    }
   }, []);
-  const skipIntro = useCallback(() => setPhase("done"), []);
+  useEffect(() => {
+    let wanted = false;
+    try {
+      wanted = window.localStorage.getItem(SOUND_KEY) === "on";
+    } catch {
+      wanted = false;
+    }
+    if (!wanted) return;
+    const resume = (): void => toggleSound(true);
+    window.addEventListener("pointerdown", resume, { once: true });
+    window.addEventListener("keydown", resume, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", resume);
+      window.removeEventListener("keydown", resume);
+    };
+  }, [toggleSound]);
+  useEffect(() => () => ambient.current?.stop(), []);
+
+  const soundButton = (
+    <button
+      type="button"
+      aria-pressed={sound}
+      aria-label="Background music"
+      onClick={(e) => {
+        e.stopPropagation();
+        toggleSound(!sound);
+      }}
+      className="sound-btn"
+      data-on={sound}
+    >
+      {sound ? (
+        <Volume2 aria-hidden="true" className="size-[18px]" />
+      ) : (
+        <VolumeX aria-hidden="true" className="size-[18px]" />
+      )}
+      <span className="sound-bars" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+        <i />
+      </span>
+      <span className="sound-label">{sound ? "Music on" : "Music off"}</span>
+    </button>
+  );
 
   useEffect(() => {
     const root = document.documentElement;
@@ -218,7 +288,12 @@ export function Bento(): ReactNode {
     >
       <AnimatePresence>
         {phase === "done" ? null : (
-          <Intro key="intro" phase={phase} onSkip={skipIntro} />
+          <Intro
+            key="intro"
+            onDone={finishIntro}
+            onSkip={finishIntro}
+            soundSlot={soundButton}
+          />
         )}
       </AnimatePresence>
 
@@ -250,78 +325,39 @@ export function Bento(): ReactNode {
         </p>
       </header>
 
-      {/* Theme: its own pill on the page edge, outside the grid. */}
-      <div
-        role="radiogroup"
-        aria-label="Theme"
-        className="theme-rail enter"
-        data-active={current}
-        style={delay(7)}
-      >
-        <span className="theme-rail-hl" aria-hidden="true" />
-        <button
-          type="button"
-          role="radio"
-          aria-checked={current === "light"}
-          aria-label="Light theme"
-          onClick={() => setTheme("light")}
+      {/* Dock: music toggle and theme, outside the grid. */}
+      <div className="dock" style={delay(7)}>
+        {soundButton}
+        <div
+          role="radiogroup"
+          aria-label="Theme"
+          className="theme-rail"
+          data-active={current}
         >
-          <Sun aria-hidden="true" className="size-[18px]" />
-        </button>
-        <button
-          type="button"
-          role="radio"
-          aria-checked={current === "dark"}
-          aria-label="Dark theme"
-          onClick={() => setTheme("dark")}
-        >
-          <Moon aria-hidden="true" className="size-[18px]" />
-        </button>
-        <span className="theme-rail-label" aria-hidden="true">
-          {current === "dark" ? "Dark" : "Light"}
-        </span>
-      </div>
-
-      {/* Dot fill shared by the tile icons. */}
-      <svg aria-hidden="true" width="0" height="0" className="absolute">
-        <defs>
-          <pattern
-            id="bento-dot-fill"
-            width="0.56"
-            height="0.56"
-            patternUnits="userSpaceOnUse"
+          <span className="theme-rail-hl" aria-hidden="true" />
+          <button
+            type="button"
+            role="radio"
+            aria-checked={current === "light"}
+            aria-label="Light theme"
+            onClick={() => setTheme("light")}
           >
-            <circle cx="0.28" cy="0.28" r="0.2" className="bento-dot-fill" />
-            {/* Dots stream through the strokes like a marquee sign. */}
-            {reduceMotion ? null : (
-              <animateTransform
-                attributeName="patternTransform"
-                type="translate"
-                from="0 0"
-                to="0.56 0"
-                dur="0.7s"
-                repeatCount="indefinite"
-              />
-            )}
-          </pattern>
-          {/* The accent gradient, slowly turning. Icons are masks over it. */}
-          <linearGradient id="bento-accent-grad" x1="0" y1="0" x2="0.6" y2="1">
-            <stop offset="0" stopColor="#ff9a3c" />
-            <stop offset="0.38" stopColor="#ff4f8b" />
-            <stop offset="0.7" stopColor="#b05cff" />
-            <stop offset="1" stopColor="#7b3cff" />
-            {reduceMotion ? null : (
-              <animateTransform
-                attributeName="gradientTransform"
-                type="rotate"
-                values="0 0.5 0.5;40 0.5 0.5;-30 0.5 0.5;0 0.5 0.5"
-                dur="9s"
-                repeatCount="indefinite"
-              />
-            )}
-          </linearGradient>
-        </defs>
-      </svg>
+            <Sun aria-hidden="true" className="size-[18px]" />
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={current === "dark"}
+            aria-label="Dark theme"
+            onClick={() => setTheme("dark")}
+          >
+            <Moon aria-hidden="true" className="size-[18px]" />
+          </button>
+          <span className="theme-rail-label" aria-hidden="true">
+            {current === "dark" ? "Dark" : "Light"}
+          </span>
+        </div>
+      </div>
 
       <div
         className="bento-grid"
@@ -340,8 +376,8 @@ export function Bento(): ReactNode {
           </span>
 
           <p className="bento-statement">
-            Designing digital experiences with <em>clarity</em>,{" "}
-            <em>motion</em> and a bit of curiosity.
+            Designing digital experiences with <em>clarity</em>, <em>motion</em>{" "}
+            and a bit of curiosity.
           </p>
 
           <button
@@ -374,8 +410,8 @@ export function Bento(): ReactNode {
             <Image
               src="/scene/photo-3.webp"
               alt="Yashish Kpur"
-              width={640}
-              height={640}
+              width={560}
+              height={560}
               priority
               unoptimized
               draggable={false}
@@ -401,7 +437,6 @@ export function Bento(): ReactNode {
         {/* Work */}
         {WORK.map((w, i) => {
           const panel = panels[w.id];
-          const Icon = w.icon;
           return (
             <button
               key={w.id}
@@ -419,32 +454,7 @@ export function Bento(): ReactNode {
                 <span className="bento-h3">{panel.title}</span>
                 <span className="bento-p">{firstLine(panel.intro)}</span>
               </span>
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="bento-icon">
-                <mask
-                  id={`bento-icon-mask-${w.id}`}
-                  maskUnits="userSpaceOnUse"
-                  x="-2"
-                  y="-2"
-                  width="28"
-                  height="28"
-                >
-                  <Icon
-                    width={24}
-                    height={24}
-                    stroke="url(#bento-dot-fill)"
-                    strokeWidth={2.6}
-                    className={`bento-icon-${w.id}`}
-                  />
-                </mask>
-                <rect
-                  x="-2"
-                  y="-2"
-                  width="28"
-                  height="28"
-                  fill="url(#bento-accent-grad)"
-                  mask={`url(#bento-icon-mask-${w.id})`}
-                />
-              </svg>
+              <GlassArt kind={w.id} />
               <span className="bento-arrow" aria-hidden="true">
                 <ArrowUpRight strokeWidth={2.4} className="size-4" />
               </span>
@@ -465,7 +475,8 @@ export function Bento(): ReactNode {
 
 /** Length of the pretend track, in seconds (3:42). */
 const TRACK = 222;
-const MARQUEE = "Now playing \u00b7 Yashish \u00b7 Product and Motion Designer \u00b7 ";
+const MARQUEE =
+  "Now playing \u00b7 Yashish \u00b7 Product and Motion Designer \u00b7 ";
 
 type Dial = { label: string; value: string; turn: () => void };
 
@@ -502,7 +513,11 @@ function PlayerDisplay({
     <div className="lcd" data-playing={playing}>
       <div className="lcd-top" aria-hidden="true">
         <span className="lcd-state">
-          {playing ? <Play className="lcd-glyph" /> : <Pause className="lcd-glyph" />}
+          {playing ? (
+            <Play className="lcd-glyph" />
+          ) : (
+            <Pause className="lcd-glyph" />
+          )}
           YASHISH
         </span>
         <span className="lcd-time" ref={timeRef}>

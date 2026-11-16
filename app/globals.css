@@ -3559,3 +3559,278 @@ body[class] {
     grid-template-rows: minmax(130px, 0.9fr) minmax(360px, 1.75fr) minmax(130px, 0.9fr);
   }
 }
+
+/* ===========================================================================
+ * Pass: typewriter intro, music dock, glass illustrations, intro card fit.
+ * ======================================================================== */
+
+/* Intro card: the row always fits its content, nothing is clipped. */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento-grid {
+    grid-template-rows: minmax(min-content, 0.9fr) minmax(360px, 1.75fr) minmax(130px, 0.9fr);
+  }
+  .bento-intro {
+    align-content: center;
+    row-gap: 12px;
+    padding: clamp(18px, 1.8vw, 26px);
+  }
+  .bento-intro .bento-statement {
+    font-size: clamp(1rem, 1.3vw, 1.35rem);
+    line-height: 1.35;
+    max-width: 36ch;
+  }
+  .bento-intro .bento-btn {
+    align-self: end;
+  }
+}
+
+/* Tiles wait (paused at their first frame) until the intro is done. */
+.bento {
+  --intro-delay: 0ms;
+}
+.bento[data-intro="playing"] .enter {
+  animation-play-state: paused;
+}
+
+/* Typewriter */
+.intro-text {
+  position: static;
+  min-height: 1.3em;
+}
+.intro-caret {
+  display: inline-block;
+  width: 0.08em;
+  height: 1em;
+  margin-left: 0.06em;
+  vertical-align: -0.12em;
+  border-radius: 1px;
+  background: linear-gradient(180deg, var(--acc-orange), var(--acc-coral), var(--acc-violet));
+  animation: caret-blink 1s steps(1) infinite;
+}
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.intro-hello {
+  font-size: 1.25em;
+}
+.intro-foot {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.intro-foot .intro-skip {
+  position: static;
+  translate: none;
+}
+
+/* Dock: music toggle + theme switch, bottom right. */
+.dock {
+  position: fixed;
+  z-index: 40;
+  right: clamp(14px, 2vw, 28px);
+  bottom: clamp(14px, 2.4vh, 28px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dock .theme-rail {
+  position: static;
+  translate: none;
+}
+.sound-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 16px 0 14px;
+  border-radius: 999px;
+  background: rgb(247 247 247 / 0.75);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1.5px solid #fff;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 16px 34px -16px rgb(0 0 0 / 0.3);
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.sound-btn[data-on="false"] {
+  color: var(--muted);
+}
+.sound-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+}
+.sound-bars i {
+  width: 3px;
+  height: 100%;
+  border-radius: 1px;
+  background: linear-gradient(0deg, var(--acc-orange), var(--acc-coral), var(--acc-violet));
+  transform-origin: 50% 100%;
+  scale: 1 0.25;
+  transition: scale 300ms var(--ease-out);
+}
+.sound-btn[data-on="true"] .sound-bars i {
+  animation: lcd-eq 520ms ease-in-out infinite alternate;
+}
+.sound-bars i:nth-child(2) {
+  animation-delay: -180ms !important;
+  animation-duration: 640ms !important;
+}
+.sound-bars i:nth-child(3) {
+  animation-delay: -320ms !important;
+  animation-duration: 450ms !important;
+}
+.sound-bars i:nth-child(4) {
+  animation-delay: -90ms !important;
+  animation-duration: 700ms !important;
+}
+.bento[data-theme="dark"] .sound-btn {
+  background: rgb(22 22 22 / 0.75);
+  border-color: #2a2a2a;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 16px 34px -16px rgb(0 0 0 / 0.8);
+}
+.intro .sound-btn {
+  height: 44px;
+}
+@media (max-width: 1023px), (max-height: 599px) {
+  .dock {
+    bottom: 16px;
+    right: 12px;
+  }
+  .dock .sound-label {
+    display: none;
+  }
+  .sound-btn {
+    height: 48px;
+    padding: 0 14px;
+  }
+}
+
+/* 3D glass illustrations: they float and turn slowly in space. */
+.bento-glass {
+  overflow: visible;
+  rotate: none;
+  animation: glass-float 7s ease-in-out infinite;
+  filter: saturate(1.05);
+}
+.bento-glass path {
+  transform-box: view-box;
+  transform-origin: 0 0;
+}
+@keyframes glass-float {
+  0%,
+  100% {
+    transform: perspective(700px) rotateX(10deg) rotateY(-14deg) translateY(0);
+  }
+  50% {
+    transform: perspective(700px) rotateX(-4deg) rotateY(10deg) translateY(-8px);
+  }
+}
+.bento-work:hover .bento-glass {
+  animation-duration: 3.5s;
+}
+.glass-key,
+.glass-spark,
+.glass-tip {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.glass-key-main {
+  animation: glass-pulse 2.4s ease-in-out infinite;
+}
+.glass-spark {
+  animation: glass-pulse 3s ease-in-out infinite;
+}
+.glass-spark-2 {
+  animation-delay: -1s;
+}
+.glass-spark-3 {
+  animation-delay: -2s;
+}
+@keyframes glass-pulse {
+  0%,
+  100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.08;
+  }
+}
+.bento[data-theme="dark"] .bento-glass {
+  filter: saturate(1.15) brightness(1.05);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bento-glass,
+  .glass-key-main,
+  .glass-spark,
+  .intro-caret,
+  .sound-btn .sound-bars i {
+    animation: none !important;
+  }
+}
+
+/* Bigger glass art, cut a little less by the tile edge. */
+.bento-glass {
+  --icon: min(68cqw, 88cqh);
+  width: var(--icon);
+  right: -6%;
+  bottom: calc(var(--icon) * -0.12);
+}
+@media (max-width: 1023px), (max-height: 599px) {
+  .bento-glass {
+    width: 46%;
+    bottom: -8%;
+  }
+}
+
+/* Music toggle sits bottom-left; the theme switch keeps bottom-right. */
+.dock {
+  position: static;
+}
+.dock .sound-btn {
+  position: fixed;
+  z-index: 40;
+  left: clamp(14px, 2vw, 28px);
+  bottom: clamp(14px, 2.4vh, 28px);
+}
+.dock .theme-rail {
+  position: fixed;
+  right: clamp(14px, 2vw, 28px);
+  bottom: clamp(14px, 2.4vh, 28px);
+}
+@media (max-width: 1023px), (max-height: 599px) {
+  .dock .sound-btn {
+    left: 12px;
+    bottom: 16px;
+  }
+  .dock .theme-rail {
+    right: 12px;
+    bottom: 16px;
+  }
+}
+/* The dock itself must not animate (a transformed parent would trap the
+   fixed buttons); its buttons enter on their own. */
+.dock > .sound-btn,
+.dock > .theme-rail {
+  animation: piece-in 700ms var(--ease-out) both;
+  animation-delay: 560ms;
+}
+.bento[data-intro="playing"] .dock > * {
+  animation-play-state: paused;
+}
