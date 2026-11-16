@@ -11,11 +11,11 @@
  * full pills (--radius-pill). Nothing in between.
  * ------------------------------------------------------------------------- */
 :root {
-  --background: #f1f0ec;
-  --surface: #e6e5e0;
+  --background: #ffffff;
+  --surface: #f4f4f2;
   --foreground: #151514;
   --muted-foreground: #66655f;
-  --line: rgb(21 21 20 / 0.14);
+  --line: rgb(21 21 20 / 0.12);
   --accent: #d9431b;
   --accent-soft: rgb(217 67 27 / 0.12);
   --ring: var(--accent);
@@ -291,24 +291,2541 @@ html[data-theme-anim="1"]::view-transition-new(root) {
 
 /* Shown before the liquid type draws (and if it never does). */
 .hero-fallback {
-  background: radial-gradient(circle at 62% 80%, #262624 0%, #111110 50%, #0b0b0a 100%);
+  background: radial-gradient(circle at 62% 80%, #f4f4f2 0%, #ffffff 60%);
 }
 
 /* Keeps the copy readable over the liquid: a soft pool behind the text on
    the left, open on the right where the fluid can be seen. */
 .hero-overlay {
   background:
-    linear-gradient(90deg, rgb(14 14 13 / 0.7) 0%, rgb(14 14 13 / 0.35) 45%, rgb(14 14 13 / 0) 75%),
-    linear-gradient(180deg, rgb(14 14 13 / 0.4) 0%, rgb(14 14 13 / 0) 35%);
+    linear-gradient(90deg, rgb(255 255 255 / 0.8) 0%, rgb(255 255 255 / 0.45) 45%, rgb(255 255 255 / 0) 75%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.5) 0%, rgb(255 255 255 / 0) 35%);
 }
 
-/* Dissolves the dark hero into the page below, in either theme. */
+/* Dissolves the hero into the page below, in either theme. */
 .hero-fade {
   background: linear-gradient(
     180deg,
-    rgb(8 8 8 / 0) 0%,
+    rgb(255 255 255 / 0) 0%,
     color-mix(in srgb, var(--canvas) 18%, transparent) 40%,
     color-mix(in srgb, var(--canvas) 70%, transparent) 75%,
     var(--canvas) 100%
   );
+}
+
+/* ===========================================================================
+ * One-screen collage (components/scene)
+ * ======================================================================== */
+
+:root {
+  --ink: #1d1d1b;
+  --paper: #f3eee7;
+  /* Accent (was lime, now the orange theme). */
+  --lime: #f26a1f;
+  --lime-deep: #d9560f;
+  --on-accent: #ffffff;
+  --accent-c: #8b4dff;
+  --accent-rgb: 139 77 255;
+  --board: #e8e7e4;
+}
+
+.scene {
+  position: relative;
+  background-color: var(--board);
+  background-image:
+    radial-gradient(120% 90% at 50% 40%, transparent 55%, rgb(0 0 0 / 0.45) 100%),
+    linear-gradient(rgb(255 255 255 / 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.075) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    var(--cell, 21px) var(--cell, 21px),
+    var(--cell, 21px) var(--cell, 21px);
+  color: #f1efe9;
+}
+
+/* Desktop: the whole collage fits one screen. --u is one canvas pixel. */
+.scene-desktop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  --u: min(calc(100vw / 1448), calc(100dvh / 1086));
+  --ex: calc(100vw - var(--u) * 1448);
+  --ey: calc(100dvh - var(--u) * 1086);
+  --cell: calc(var(--u) * 21.3);
+}
+
+.scene-mobile {
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+@media (min-width: 768px) and (min-aspect-ratio: 1/1) {
+  .scene-desktop {
+    display: block;
+  }
+  .scene-mobile {
+    display: none;
+  }
+}
+
+.piece-tap {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.piece-tap img {
+  transition: filter 300ms var(--ease-out);
+}
+
+.piece-tap:hover img,
+.piece-tap:focus-visible img {
+  filter: drop-shadow(0 16px 18px rgb(0 0 0 / 0.55));
+}
+
+.piece-person:hover img,
+.piece-person:focus-visible img {
+  filter: drop-shadow(0 0 22px rgb(var(--accent-rgb) / 0.25));
+}
+
+.piece-tap:focus-visible,
+.nav-hit:focus-visible {
+  outline: 3px solid var(--lime);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+/* Little lime sticker that names what a piece opens. */
+.piece-hint {
+  position: absolute;
+  top: 2%;
+  right: 4%;
+  padding: 0.25em 0.7em;
+  border-radius: 3px;
+  background: var(--lime);
+  color: var(--on-accent);
+  font-family: var(--font-kalam), var(--font-body);
+  font-weight: 700;
+  font-size: clamp(12px, calc(var(--u, 1px) * 22), 20px);
+  white-space: nowrap;
+  rotate: -5deg;
+  box-shadow: 2px 2px 0 var(--ink);
+  opacity: 0;
+  translate: 0 8px;
+  transition:
+    opacity 250ms var(--ease-out),
+    translate 400ms var(--ease-out);
+  pointer-events: none;
+}
+
+.piece-hint-person {
+  top: 16%;
+  right: 16%;
+}
+
+.group:hover .piece-hint,
+.group:focus-visible .piece-hint {
+  opacity: 1;
+  translate: 0 0;
+}
+
+@media (hover: none) {
+  .piece-hint {
+    display: none;
+  }
+}
+
+.nav-scribble path {
+  fill: none;
+  stroke: var(--lime-deep);
+  stroke-width: 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 450ms var(--ease-out);
+}
+
+.nav-hit:hover .nav-scribble path,
+.nav-hit:focus-visible .nav-scribble path {
+  stroke-dashoffset: 0;
+}
+
+/* ---- Sheet: clean modal that opens with new tiles ---------------------- */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(29 29 27 / 0.32);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.sheet-shadow {
+  width: min(1100px, 100%);
+}
+
+.sheet {
+  position: relative;
+  max-height: min(88dvh, 920px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: clamp(24px, 3.4vw, 44px);
+  border-radius: 28px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 40px 80px -30px rgb(0 0 0 / 0.35);
+  scrollbar-width: thin;
+}
+
+.sheet-close {
+  position: absolute;
+  top: clamp(16px, 2.2vw, 26px);
+  right: clamp(16px, 2.2vw, 26px);
+  z-index: 3;
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #f1efea;
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    background-color 200ms,
+    color 200ms,
+    rotate 300ms var(--ease-out);
+}
+.sheet-close:hover {
+  background: var(--accent-c);
+  color: #fff;
+  rotate: 90deg;
+}
+
+.sheet-kicker {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent-c);
+}
+
+.sheet-title {
+  margin-top: 4px;
+  font-family: var(--font-block), var(--font-body);
+  font-weight: 600;
+  font-size: clamp(2rem, 1.3rem + 2.6vw, 3.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr));
+  gap: 14px;
+}
+@media (max-width: 479px) {
+  .sheet-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+.polaroid {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px 16px;
+  border-radius: 20px;
+  background: #f6f4f0;
+  transition:
+    background-color 250ms,
+    box-shadow 300ms var(--ease-out);
+}
+.polaroid:hover {
+  background: #fff;
+  box-shadow:
+    inset 0 0 0 1.5px rgb(var(--accent-rgb) / 0.6),
+    0 20px 36px -22px rgb(0 0 0 / 0.35);
+}
+.polaroid:focus-visible {
+  outline: 3px solid var(--accent-c);
+  outline-offset: 3px;
+}
+.polaroid-static {
+  width: 100%;
+  max-width: 400px;
+  justify-self: center;
+}
+
+.tile-screen {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 4.4;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.tile-phone {
+  position: relative;
+  display: flex;
+  width: 50%;
+  aspect-ratio: 9 / 17;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 3px solid #1d1d1b;
+  border-radius: 18px;
+  background: rgb(0 0 0 / 0.22);
+  color: #fff;
+  box-shadow: 0 16px 26px -10px rgb(0 0 0 / 0.45);
+  rotate: 6deg;
+  transition:
+    rotate 450ms var(--ease-out),
+    translate 450ms var(--ease-out);
+}
+.polaroid:hover .tile-phone {
+  rotate: 0deg;
+  translate: 0 -4px;
+}
+.tile-notch {
+  position: absolute;
+  top: 6px;
+  width: 34%;
+  height: 7px;
+  border-radius: 999px;
+  background: #1d1d1b;
+}
+.tile-phone-text {
+  padding-inline: 6px;
+  font-family: var(--font-block), var(--font-body);
+  font-weight: 600;
+  font-size: 0.7rem;
+  line-height: 1.15;
+  text-align: center;
+}
+.tile-screen-big .tile-phone {
+  border-width: 4px;
+  border-radius: 28px;
+}
+.tile-screen-big .tile-notch {
+  top: 10px;
+  height: 10px;
+}
+.tile-screen-big .tile-phone-text {
+  font-size: 1rem;
+}
+
+.polaroid-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 14px;
+  padding-inline: 4px;
+  font-family: var(--font-block), var(--font-body);
+  font-weight: 600;
+  font-size: 1.02rem;
+  line-height: 1.2;
+}
+.polaroid-label svg {
+  color: var(--accent-c);
+}
+.polaroid-kicker {
+  margin-top: 4px;
+  padding-inline: 4px;
+  font-size: 0.82rem;
+  color: #74726c;
+}
+
+.detail-title {
+  margin-top: 4px;
+  font-family: var(--font-block), var(--font-body);
+  font-weight: 600;
+  font-size: clamp(1.8rem, 1.2rem + 2vw, 2.8rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.detail-back {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #f1efea;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 200ms;
+}
+.detail-back:hover,
+.detail-back:focus-visible {
+  background: #e7e4dd;
+}
+
+.sticker {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #f1efea;
+  color: #4a4944;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.lime-btn {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--accent-c);
+  color: #fff;
+  font-weight: 600;
+  transition:
+    background-color 200ms,
+    translate 200ms var(--ease-out);
+}
+.lime-btn:hover,
+.lime-btn:focus-visible {
+  background: #d9560f;
+  translate: 0 -2px;
+}
+
+.hand-note {
+  font-size: 0.95rem;
+  color: #74726c;
+}
+
+/* Entrance: pure CSS, so nothing waits on JS to appear. */
+@keyframes piece-in {
+  from {
+    opacity: 0;
+    translate: 0 var(--enter-y, 28px);
+    rotate: var(--enter-rotate, 0deg);
+    scale: 0.96;
+  }
+}
+
+.enter {
+  animation: piece-in 700ms var(--ease-out) both;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+/* ===========================================================================
+ * Bento layout (components/bento): clean cards, Poppins, one orange accent.
+ * ======================================================================== */
+
+.bento {
+  --gap: 14px;
+  --muted: #74726c;
+  min-height: 100dvh;
+  padding: 16px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  background: var(--board);
+  color: var(--ink);
+}
+
+.bento-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding-inline: 4px;
+}
+
+.bento-name {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  cursor: pointer;
+  font-family: var(--font-block), var(--font-body);
+  font-weight: 600;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+.bento-name-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent-c);
+}
+
+.bento-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.bento-pill {
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: #fff;
+  color: var(--ink);
+  transition: background-color 200ms, color 200ms;
+}
+.bento-pill:hover {
+  background: #f6f4f0;
+}
+.bento-pill-accent {
+  background: var(--ink);
+  color: #fff;
+}
+.bento-pill-accent:hover {
+  background: var(--accent-c);
+}
+
+.bento-grid {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "intro intro"
+    "person person"
+    "product product"
+    "motion motion"
+    "ai ai";
+  grid-auto-rows: minmax(210px, auto);
+}
+
+.bento-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  background: #fff;
+  text-align: left;
+}
+
+.bento-tile {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  transition:
+    transform 350ms var(--ease-out),
+    box-shadow 350ms var(--ease-out);
+}
+.bento-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 44px -26px rgb(0 0 0 / 0.3);
+}
+.bento-tile:active {
+  transform: scale(0.99);
+}
+.bento :focus-visible {
+  outline: 3px solid var(--accent-c);
+  outline-offset: 3px;
+}
+
+.bento-arrow {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #f1efea;
+  color: var(--ink);
+  transition:
+    transform 350ms var(--ease-out),
+    background-color 200ms,
+    color 200ms;
+}
+.bento-tile:hover .bento-arrow {
+  transform: rotate(45deg);
+  background: var(--accent-c);
+  color: #fff;
+}
+
+/* Shared card copy (like the reference: title + small grey text). */
+.bento-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 24px 64px 0 24px;
+}
+.bento-copy-bottom {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 0 24px 24px;
+}
+.bento-h3 {
+  font-family: var(--font-block), var(--font-body);
+  font-weight: 600;
+  font-size: clamp(1.2rem, 0.9rem + 0.8vw, 1.6rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.bento-p {
+  max-width: 24ch;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.bento-count {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent-c);
+}
+
+/* Intro */
+.bento-intro {
+  grid-area: intro;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 22px;
+  padding: clamp(24px, 3vw, 40px);
+}
+.bento-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: #f6f4f0;
+  color: #4a4944;
+}
+.bento-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent-c);
+  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 0.2);
+}
+.bento-h1 {
+  font-family: var(--font-block), var(--font-body);
+  font-weight: 600;
+  font-size: clamp(2.3rem, 1rem + 4.2vw, 4.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+.bento-amp {
+  color: var(--accent-c);
+}
+.bento-lede {
+  margin-top: 16px;
+  max-width: 36ch;
+  font-size: clamp(0.95rem, 0.85rem + 0.3vw, 1.08rem);
+  line-height: 1.6;
+  color: var(--muted);
+}
+.bento-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.bento-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: #f1efea;
+  color: var(--ink);
+  transition:
+    background-color 200ms,
+    translate 200ms var(--ease-out);
+}
+.bento-btn:not(.bento-btn-accent):hover {
+  background: #e7e4dd;
+  translate: 0 -2px;
+}
+.bento-btn-accent {
+  background: var(--accent-c);
+  color: #fff;
+}
+.bento-btn-accent:hover {
+}
+
+/* Portrait */
+.bento-person {
+  grid-area: person;
+  min-height: 420px;
+  background: #f3eee7;
+}
+.bento-person-glow {
+  position: absolute;
+  left: 50%;
+  bottom: -18%;
+  width: 95%;
+  aspect-ratio: 1;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: radial-gradient(circle, #f9a26b 0%, var(--accent-c) 55%, #e2560c 100%);
+  transition: scale 600ms var(--ease-out);
+}
+.bento-portrait {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 1;
+  width: auto;
+  height: 72%;
+  max-width: none;
+  translate: -50% 0;
+  transition: scale 600ms var(--ease-out);
+  transform-origin: 50% 100%;
+}
+.bento-person:hover .bento-portrait {
+  scale: 1.04;
+}
+.bento-person:hover .bento-person-glow {
+  scale: 1.06;
+}
+
+/* Approach */
+.bento-note {
+  grid-area: note;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+}
+.bento-kicker {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-c);
+}
+.bento-quote {
+  font-family: var(--font-block), var(--font-body);
+  font-weight: 600;
+  font-size: clamp(1.4rem, 0.9rem + 1.3vw, 2.15rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+.bento-quote em {
+  font-style: normal;
+  color: var(--accent-c);
+}
+
+/* Playground */
+.bento-play {
+  grid-area: play;
+  background: var(--accent-c);
+  color: #fff;
+}
+.bento-play .bento-p {
+  color: rgb(255 255 255 / 0.85);
+}
+.bento-play .bento-arrow {
+  background: rgb(255 255 255 / 0.22);
+  color: #fff;
+}
+.bento-play:hover .bento-arrow {
+  background: #fff;
+  color: var(--accent-c);
+}
+.bento-play-icon {
+  position: absolute;
+  top: 22px;
+  left: 24px;
+  display: grid;
+  place-items: center;
+  width: clamp(58px, 5vw, 76px);
+  aspect-ratio: 1;
+  border-radius: 20px;
+  background: #fff;
+  color: var(--accent-c);
+  rotate: -8deg;
+  box-shadow: 0 14px 26px -12px rgb(0 0 0 / 0.35);
+  transition: rotate 450ms var(--ease-out), scale 450ms var(--ease-out);
+}
+.bento-play:hover .bento-play-icon {
+  rotate: 4deg;
+  scale: 1.06;
+}
+
+/* Work cards: copy on the left, a phone mock peeking in from the corner. */
+.bento-work {
+  min-height: 210px;
+}
+.bento-phone {
+  position: absolute;
+  right: 6%;
+  bottom: -26%;
+  display: grid;
+  place-items: center;
+  width: clamp(92px, 34%, 132px);
+  aspect-ratio: 9 / 18;
+  border: 4px solid #1d1d1b;
+  border-radius: 26px;
+  background: linear-gradient(160deg, #ffb27f 0%, var(--accent-c) 55%, #c94a08 100%);
+  color: #fff;
+  rotate: var(--tilt, 0deg);
+  box-shadow: 0 24px 40px -16px rgb(0 0 0 / 0.4);
+  transition:
+    rotate 500ms var(--ease-out),
+    translate 500ms var(--ease-out);
+}
+.bento-work:nth-child(odd) .bento-phone {
+  background: linear-gradient(160deg, #f6f1ea 0%, #e8dfd2 100%);
+  color: var(--accent-c);
+}
+.bento-phone-notch {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 34%;
+  height: 8px;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: #1d1d1b;
+}
+.bento-phone-icon {
+  width: 38%;
+  height: auto;
+}
+.bento-work:hover .bento-phone {
+  rotate: 0deg;
+  translate: 0 -10%;
+}
+
+/* Tablet */
+@media (min-width: 640px) {
+  .bento-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-areas:
+      "intro intro intro intro"
+      "person person product product"
+      "person person motion motion"
+      "person person ai ai";
+    grid-auto-rows: minmax(230px, auto);
+  }
+  .bento-person {
+    min-height: 0;
+  }
+}
+
+/* Desktop: one screen, no page scroll. */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento {
+    height: 100dvh;
+    overflow: hidden;
+    padding: 16px 100px 20px;
+  }
+  .bento-grid {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "intro intro person product"
+      "intro intro person motion"
+      "intro intro person ai";
+    grid-auto-rows: auto;
+  }
+  .bento-work .bento-p {
+    max-width: 17ch;
+  }
+  /* Headline scales with the intro card, so it stays on 3 lines. */
+  .bento-intro {
+    container-type: inline-size;
+  }
+  .bento-h1 {
+    font-size: min(10.4cqi, 8.6dvh, 4.6rem);
+  }
+  .bento-person-glow {
+    width: auto;
+    height: 64%;
+    bottom: -16%;
+  }
+  .bento-phone {
+    width: clamp(80px, 30%, 120px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-tile,
+  .bento-phone,
+  .bento-portrait,
+  .bento-person-glow,
+  .bento-play-icon {
+    transition: none;
+  }
+}
+
+/* Cream tiles get dark phone text so it stays readable. */
+.tile-screen[style*="fbf8f3"] .tile-phone {
+  background: rgb(255 255 255 / 0.4);
+  color: var(--accent-c);
+}
+.tile-screen[style*="fbf8f3"] .tile-phone-text {
+  color: var(--ink);
+}
+
+/* Buttons centre their content; cards stack from the top instead. */
+.bento-tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+.bento-work .bento-copy {
+  max-width: 64%;
+  padding-right: 0;
+}
+@media (max-width: 639px) {
+  .bento-pill {
+    padding: 8px 14px;
+  }
+  .bento-phone {
+    width: 30%;
+    right: 5%;
+    bottom: -34%;
+  }
+  .bento-work .bento-copy {
+    max-width: 60%;
+  }
+}
+.bento-note {
+  justify-content: space-between;
+}
+
+/* ---- White page, softer cards (grey-white gradient, hairline, shadows) -- */
+
+.bento {
+  --board: #ffffff;
+  --card-bg: linear-gradient(165deg, #ffffff 0%, #f6f5f3 55%, #ecebe8 100%);
+  --card-stroke: #e4e2dd;
+  --card-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    inset 0 -14px 28px -18px rgb(0 0 0 / 0.1),
+    0 1px 2px rgb(0 0 0 / 0.05),
+    0 14px 30px -18px rgb(0 0 0 / 0.18);
+  background: #fff;
+}
+
+.bento-card,
+.bento-person {
+  background: var(--card-bg);
+  border: 1px solid var(--card-stroke);
+  box-shadow: var(--card-shadow);
+}
+.bento-tile:hover {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    inset 0 -14px 28px -18px rgb(0 0 0 / 0.1),
+    0 2px 4px rgb(0 0 0 / 0.05),
+    0 24px 44px -22px rgb(0 0 0 / 0.26);
+}
+
+.bento-pill {
+  background: #f6f5f3;
+  border: 1px solid var(--card-stroke);
+}
+.bento-pill:hover {
+  background: #fff;
+}
+.bento-pill-accent {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.bento-arrow,
+.bento-tag,
+.bento-btn:not(.bento-btn-accent) {
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--card-stroke), 0 2px 6px -2px rgb(0 0 0 / 0.08);
+}
+
+/* Desktop: the whole bento sits in the middle 60% of the page. */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento {
+    justify-content: center;
+    padding: 24px 0;
+    --gap: 12px;
+  }
+  .bento-head,
+  .bento-grid {
+    width: 60vw;
+    margin-inline: auto;
+  }
+  .bento-grid {
+    flex: none;
+    height: min(66dvh, 44vw);
+  }
+  .bento-card {
+    border-radius: 22px;
+  }
+  .bento-intro {
+    padding: clamp(18px, 2vw, 30px);
+  }
+  .bento-copy {
+    padding: 16px 52px 0 18px;
+    gap: 4px;
+  }
+  .bento-h3 {
+    font-size: clamp(0.95rem, 0.5rem + 0.6vw, 1.25rem);
+  }
+  .bento-p {
+    font-size: 0.74rem;
+    line-height: 1.45;
+  }
+  .bento-count {
+    font-size: 0.7rem;
+    margin-top: 2px;
+  }
+  .bento-arrow {
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+  }
+  .bento-arrow svg {
+    width: 14px;
+    height: 14px;
+  }
+  .bento-work {
+    min-height: 0;
+  }
+  .bento-phone {
+    width: clamp(40px, 21%, 60px);
+    right: 8%;
+    border-width: 2.5px;
+    border-radius: 13px;
+    bottom: -16%;
+  }
+  .bento-phone-notch {
+    top: 5px;
+    height: 5px;
+  }
+  .bento-tag {
+    font-size: 0.72rem;
+    padding: 5px 12px;
+  }
+  .bento-lede {
+    margin-top: 10px;
+    font-size: clamp(0.8rem, 0.6rem + 0.3vw, 0.98rem);
+  }
+  .bento-btn {
+    min-height: 40px;
+    padding: 0 18px;
+    font-size: 0.85rem;
+  }
+}
+
+/* ---- Checked, lightly tinted page + centre-stage layout ----------------- */
+
+.bento {
+  background-color: #fbfaf8;
+  background-image:
+    radial-gradient(40% 45% at 50% 52%, rgb(var(--accent-rgb) / 0.14) 0%, transparent 70%),
+    radial-gradient(35% 40% at 8% 10%, rgb(255 196 150 / 0.28) 0%, transparent 70%),
+    radial-gradient(35% 40% at 94% 92%, rgb(255 196 150 / 0.24) 0%, transparent 70%),
+    linear-gradient(rgb(29 29 27 / 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(29 29 27 / 0.055) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    32px 32px,
+    32px 32px;
+  background-position: center;
+}
+
+@media (min-width: 1024px) and (min-height: 600px) {
+  /* One big card in the middle, two on each side. */
+  .bento-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr) minmax(0, 1fr);
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "person intro product"
+      "ai     intro motion";
+  }
+
+  .bento-intro {
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+    text-align: center;
+    background:
+      radial-gradient(90% 60% at 50% 0%, rgb(255 255 255 / 1) 0%, transparent 70%),
+      linear-gradient(170deg, #ffffff 0%, #f7f6f3 60%, #efede9 100%);
+    box-shadow:
+      var(--card-shadow),
+      0 40px 80px -40px rgb(var(--accent-rgb) / 0.35);
+  }
+  .bento-intro .bento-tag {
+    align-self: center;
+  }
+  .bento-intro .bento-lede {
+    margin-inline: auto;
+  }
+  .bento-intro .bento-actions {
+    justify-content: center;
+  }
+  .bento-h1 {
+    font-size: min(10cqi, 7dvh, 4rem);
+  }
+
+  /* Small portrait cell: keep the face in view. */
+  .bento-portrait {
+    height: 64%;
+  }
+  .bento-work .bento-phone {
+    width: clamp(56px, 32%, 86px);
+    border-width: 3px;
+    border-radius: 18px;
+    bottom: -20%;
+  }
+  .bento-person-glow {
+    height: 70%;
+    bottom: -22%;
+  }
+}
+
+/* ---- Rethought content: name-led centre card, statement card, work tiles - */
+
+/* Statement card (small). Resets the older centred-hero rules. */
+.bento-intro {
+  align-items: flex-start;
+  justify-content: space-between;
+  text-align: left;
+  gap: 16px;
+}
+.bento-statement {
+  font-family: var(--font-block), var(--font-body);
+  font-weight: 600;
+  font-size: clamp(1.15rem, 0.8rem + 1vw, 1.6rem);
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  max-width: 22ch;
+}
+.bento-statement em {
+  font-style: normal;
+  color: var(--accent-c);
+}
+
+/* Centre card: big name, portrait in front of it, roles at the foot. */
+.bento-hero {
+  grid-area: person;
+  container-type: inline-size;
+  min-height: 440px;
+  background:
+    radial-gradient(70% 55% at 50% 100%, rgb(var(--accent-rgb) / 0.12) 0%, transparent 70%),
+    var(--card-bg);
+}
+.bento-hero-name {
+  position: absolute;
+  top: 5%;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  text-align: center;
+  font-family: var(--font-block), var(--font-body);
+  font-weight: 700;
+  font-size: 26cqi;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+  color: var(--ink);
+  transition: letter-spacing 600ms var(--ease-out);
+}
+.bento-hero:hover .bento-hero-name {
+  letter-spacing: -0.035em;
+}
+.bento-hero .bento-person-glow {
+  width: 74%;
+  height: auto;
+  aspect-ratio: 1;
+  bottom: -10%;
+}
+.bento-hero .bento-portrait {
+  z-index: 1;
+  height: 76%;
+}
+.bento-hero-foot {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px;
+}
+.bento-roles {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6), 0 10px 24px -14px rgb(0 0 0 / 0.35);
+  font-family: var(--font-block), var(--font-body);
+  font-weight: 600;
+  font-size: 0.88rem;
+  line-height: 1.25;
+  color: var(--ink);
+}
+.bento-roles em {
+  font-style: normal;
+  color: var(--accent-c);
+}
+.bento-about-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--accent-c);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background-color 200ms;
+}
+.bento-hero:hover .bento-about-pill {
+}
+
+/* Work tiles: count above the title, copy at the foot. */
+.bento-work .bento-count {
+  margin: 0 0 2px;
+}
+.bento-copy-bottom {
+  padding: 0 20px 20px;
+}
+
+@media (min-width: 640px) {
+  .bento-grid {
+    grid-template-areas:
+      "intro intro person person"
+      "product product person person"
+      "motion motion ai ai";
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr);
+    grid-template-areas:
+      "intro person product"
+      "ai    person motion";
+  }
+  .bento-intro {
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
+    padding: 20px;
+  }
+  .bento-intro .bento-tag {
+    align-self: flex-start;
+  }
+  .bento-hero {
+    min-height: 0;
+  }
+  .bento-hero .bento-portrait {
+    height: 74%;
+  }
+  .bento-roles {
+    font-size: clamp(0.72rem, 0.4rem + 0.45vw, 0.92rem);
+  }
+  .bento-about-pill {
+    font-size: 0.78rem;
+    padding: 8px 14px;
+  }
+  /* Phone sits up top, fully visible; copy anchors the bottom. */
+  .bento-work .bento-phone {
+    top: 18px;
+    left: 18px;
+    right: auto;
+    bottom: auto;
+    width: clamp(48px, 28%, 74px);
+  }
+  .bento-work:hover .bento-phone {
+    translate: 0 -4px;
+  }
+  .bento-copy-bottom {
+    padding: 0 16px 16px;
+  }
+  .bento-work .bento-copy {
+    max-width: none;
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento-intro {
+    container-type: inline-size;
+  }
+  .bento-statement {
+    font-size: min(8cqi, 2.4dvh);
+  }
+  .bento-intro .bento-btn {
+    min-height: 38px;
+    padding: 0 16px;
+    font-size: 0.82rem;
+  }
+  .bento-hero-name {
+    font-size: 23.5cqi;
+    top: 6%;
+  }
+  .bento-work .bento-phone {
+    width: min(26%, 7.6dvh);
+  }
+  .bento-work .bento-p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* ===========================================================================
+ * Device language: inset screens, stepped dials, speaker grille.
+ * Light take on a hardware reference; the page theme stays white.
+ * ======================================================================== */
+
+/* Background grid only in the middle, fading out to the sides. */
+.bento {
+  position: relative;
+  background-color: #fbfaf8;
+  background-image:
+    radial-gradient(40% 45% at 50% 52%, rgb(var(--accent-rgb) / 0.1) 0%, transparent 70%),
+    radial-gradient(35% 40% at 8% 10%, rgb(255 196 150 / 0.22) 0%, transparent 70%),
+    radial-gradient(35% 40% at 94% 92%, rgb(255 196 150 / 0.2) 0%, transparent 70%);
+  background-size: 100% 100%;
+}
+.bento::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgb(29 29 27 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(29 29 27 / 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: center;
+  -webkit-mask-image: radial-gradient(ellipse 42% 52% at 50% 50%, #000 0%, rgb(0 0 0 / 0.5) 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 42% 52% at 50% 50%, #000 0%, rgb(0 0 0 / 0.5) 55%, transparent 100%);
+}
+.bento-head,
+.bento-grid {
+  position: relative;
+  z-index: 1;
+}
+
+/* Device body */
+.bento-device {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+.bento-device .bento-copy {
+  position: static;
+  padding: 0;
+  max-width: none;
+  gap: 3px;
+}
+
+/* Inset screen with a faint dot grid. */
+.device-screen {
+  position: relative;
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  background-color: #f2f1ed;
+  background-image: radial-gradient(circle, rgb(29 29 27 / 0.12) 0.9px, transparent 1.3px);
+  background-size: 8px 8px;
+  background-position: center;
+  box-shadow:
+    inset 0 2px 8px rgb(0 0 0 / 0.1),
+    inset 0 0 0 1px rgb(0 0 0 / 0.06);
+}
+.device-screen::after {
+  /* Glass sheen. */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(155deg, rgb(255 255 255 / 0.55) 0%, transparent 38%);
+}
+
+.device-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 6px 4px;
+}
+
+/* Statement screen */
+.device-screen-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+}
+.device-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(180deg, #ff8a45 0%, var(--accent-c) 60%, #e45a10 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    inset 0 -2px 0 rgb(0 0 0 / 0.12),
+    0 4px 0 #c94a08,
+    0 8px 16px -6px rgb(201 74 8 / 0.6);
+  transition:
+    translate 120ms var(--ease-out),
+    box-shadow 120ms var(--ease-out);
+}
+.device-key:hover {
+  translate: 0 1px;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    inset 0 -2px 0 rgb(0 0 0 / 0.12),
+    0 3px 0 #c94a08,
+    0 6px 12px -6px rgb(201 74 8 / 0.6);
+}
+.device-key:active {
+  translate: 0 4px;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    0 0 0 #c94a08;
+}
+
+/* Speaker grille + port */
+.device-grille {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-bottom: 2px;
+}
+.device-grille > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #d9d6cf;
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.25);
+}
+.device-grille > .device-port {
+  width: 34px;
+  height: 8px;
+  margin-inline: 10px;
+  border-radius: 999px;
+  background: #e4e1da;
+  box-shadow:
+    inset 0 1px 2px rgb(0 0 0 / 0.3),
+    0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+/* Dials */
+.knob {
+  --size: 48px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--size);
+  height: var(--size);
+  flex-shrink: 0;
+  border-radius: 999px;
+  /* The well the dial sits in. */
+  background: #ecebe7;
+  box-shadow:
+    inset 0 2px 4px rgb(0 0 0 / 0.16),
+    0 1px 0 rgb(255 255 255 / 0.9);
+}
+.knob-sm {
+  --size: 38px;
+}
+.knob-cap {
+  position: relative;
+  width: 78%;
+  height: 78%;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 38% 30%, #ffffff 0%, #f1efeb 38%, #d6d3cc 100%);
+  box-shadow:
+    0 4px 8px -2px rgb(0 0 0 / 0.35),
+    0 1px 2px rgb(0 0 0 / 0.2),
+    inset 0 -2px 3px rgb(0 0 0 / 0.12);
+  rotate: var(--angle, 0deg);
+  transition: rotate 520ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.knob-cap::before {
+  /* Knurled rim. */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-conic-gradient(rgb(0 0 0 / 0.1) 0deg 4deg, transparent 4deg 9deg);
+  -webkit-mask-image: radial-gradient(circle, transparent 62%, #000 66%);
+  mask-image: radial-gradient(circle, transparent 62%, #000 66%);
+}
+.knob-dot {
+  position: absolute;
+  top: 16%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: var(--accent-c);
+  box-shadow: 0 0 6px rgb(var(--accent-rgb) / 0.8);
+}
+
+.device-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 4px 4px 0;
+}
+.knob-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  border-radius: 14px;
+  padding: 4px 0;
+}
+.knob-btn:hover .knob-cap {
+  scale: 1.05;
+}
+.knob-btn:active .knob-cap {
+  scale: 0.96;
+}
+.knob-label {
+  font-family: var(--font-block), var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #3b3a36;
+}
+.knob-value {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Centre device */
+.bento-hero {
+  padding: 12px;
+  gap: 10px;
+  background: var(--card-bg);
+}
+.device-screen-hero {
+  cursor: pointer;
+  background-image: none;
+  background-color: #f4f3ef;
+}
+.dot-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.dot-fallback {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: auto;
+  height: 86%;
+  max-width: none;
+  translate: -50% 0;
+  filter: grayscale(1) contrast(1.1);
+  transition: opacity 500ms;
+}
+.dot-canvas[data-ready] ~ .dot-fallback {
+  opacity: 0;
+}
+.device-screen-hero .bento-roles {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 2;
+}
+.device-screen-hero .bento-about-pill {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+}
+.device-screen-hero:hover .bento-about-pill {
+}
+
+
+
+@media (min-width: 1024px) and (min-height: 600px) {
+  .knob {
+    --size: clamp(36px, 3.2vw, 50px);
+  }
+  .device-key {
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 0.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knob-cap,
+  .device-key {
+    transition: none;
+  }
+}
+.device-key {
+  white-space: nowrap;
+}
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento-intro .device-grille {
+    display: none;
+  }
+}
+
+/* ===========================================================================
+ * Black device (centre) + theme switch + shared tile gradients.
+ * ======================================================================== */
+
+/* Side tiles keep their own style; gradients borrow the device's charcoal
+   so the whole grid reads as one family. */
+.bento {
+  --card-bg:
+    radial-gradient(120% 90% at 100% 100%, rgb(22 22 22 / 0.07) 0%, transparent 55%),
+    radial-gradient(90% 70% at 0% 0%, rgb(255 255 255 / 1) 0%, transparent 60%),
+    linear-gradient(165deg, #ffffff 0%, #f3f3f2 48%, #e3e3e1 100%);
+  --card-stroke: #e1e0dd;
+}
+
+.bento-hero {
+  position: relative;
+  padding: 12px 12px 14px 34px;
+  gap: 12px;
+  color: #f1efe9;
+  background:
+    radial-gradient(120% 60% at 30% 0%, rgb(255 255 255 / 0.07) 0%, transparent 60%),
+    linear-gradient(165deg, #2b2b2b 0%, #181818 45%, #0e0e0e 100%);
+  border-color: #2f2f2f;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.09),
+    inset 0 -18px 30px -20px rgb(0 0 0 / 0.8),
+    0 2px 4px rgb(0 0 0 / 0.2),
+    0 30px 60px -28px rgb(0 0 0 / 0.55);
+}
+
+/* Glossy black screen */
+.device-screen-hero {
+  background-color: #050505;
+  box-shadow:
+    inset 0 2px 10px rgb(0 0 0 / 0.9),
+    inset 0 0 0 1px rgb(255 255 255 / 0.06);
+}
+.device-screen-hero::after {
+  background: linear-gradient(155deg, rgb(255 255 255 / 0.1) 0%, transparent 34%);
+}
+.device-screen-hero .dot-fallback {
+  filter: grayscale(1) invert(0.05) brightness(0.9);
+}
+.device-screen-hero .bento-roles {
+  background: rgb(20 20 20 / 0.72);
+  color: #f1efe9;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.1);
+}
+
+/* Theme switch on the device's left edge (like the side slider in the ref). */
+.device-switch {
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  translate: 0 -62%;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.device-switch-label {
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #8d8a84;
+  transition: color 200ms;
+}
+.device-switch[aria-checked="false"] .device-switch-label:first-child,
+.device-switch[aria-checked="true"] .device-switch-label:last-child {
+  color: #f1efe9;
+}
+.device-switch-track {
+  position: relative;
+  width: 10px;
+  height: 46px;
+  border-radius: 999px;
+  background: #050505;
+  box-shadow:
+    inset 0 2px 4px rgb(0 0 0 / 0.9),
+    0 1px 0 rgb(255 255 255 / 0.08);
+}
+.device-switch-pin {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #ffb27f 0%, var(--accent-c) 55%, #b84306 100%);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.6), 0 0 8px rgb(var(--accent-rgb) / 0.5);
+  transition: top 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.device-switch[aria-checked="true"] .device-switch-pin {
+  top: 28px;
+}
+
+/* Dark dials: bigger caps, smaller labels. */
+.device-controls {
+  padding: 2px 0 0;
+}
+.knob-btn {
+  gap: 8px;
+}
+.knob-label {
+  font-size: 0.6rem;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #e9e7e2;
+}
+.bento-hero .knob {
+  --size: clamp(54px, 4.6vw, 70px);
+  background: #0a0a0a;
+  box-shadow:
+    inset 0 2px 5px rgb(0 0 0 / 0.95),
+    0 0 0 1px rgb(255 255 255 / 0.05),
+    0 1px 0 rgb(255 255 255 / 0.06);
+}
+.bento-hero .knob-cap {
+  width: 74%;
+  height: 74%;
+  background: radial-gradient(circle at 38% 30%, #4a4a4a 0%, #262626 45%, #121212 100%);
+  box-shadow:
+    0 5px 10px -2px rgb(0 0 0 / 0.8),
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    inset 0 -2px 4px rgb(0 0 0 / 0.5);
+}
+.bento-hero .knob-cap::before {
+  background: repeating-conic-gradient(rgb(255 255 255 / 0.09) 0deg 3deg, transparent 3deg 7deg);
+}
+.bento-hero .knob-dot {
+  width: 6px;
+  height: 6px;
+}
+.knob-btn:focus-visible {
+  outline-offset: 2px;
+}
+
+/* ---- Dark theme (switch on the device) --------------------------------- */
+.bento[data-theme="dark"] {
+  --ink: #f1efe9;
+  --muted: #9b988f;
+  --paper: #1c1c1c;
+  --card-stroke: #2a2a2a;
+  --card-bg:
+    radial-gradient(120% 90% at 100% 100%, rgb(var(--accent-rgb) / 0.08) 0%, transparent 55%),
+    radial-gradient(90% 70% at 0% 0%, rgb(255 255 255 / 0.05) 0%, transparent 60%),
+    linear-gradient(165deg, #232323 0%, #181818 50%, #111111 100%);
+  --card-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    inset 0 -14px 28px -18px rgb(0 0 0 / 0.7),
+    0 1px 2px rgb(0 0 0 / 0.4),
+    0 18px 36px -20px rgb(0 0 0 / 0.8);
+  background-color: #0b0b0b;
+  background-image:
+    radial-gradient(40% 45% at 50% 52%, rgb(var(--accent-rgb) / 0.12) 0%, transparent 70%),
+    radial-gradient(35% 40% at 8% 10%, rgb(var(--accent-rgb) / 0.06) 0%, transparent 70%);
+  color: var(--ink);
+}
+.bento[data-theme="dark"]::before {
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+}
+.bento[data-theme="dark"] .bento-pill {
+  background: #1a1a1a;
+  color: var(--ink);
+}
+.bento[data-theme="dark"] .bento-pill:hover {
+  background: #242424;
+}
+.bento[data-theme="dark"] .bento-pill-accent {
+  background: var(--accent-c);
+  border-color: var(--accent-c);
+  color: #fff;
+}
+.bento[data-theme="dark"] .bento-arrow,
+.bento[data-theme="dark"] .bento-tag,
+.bento[data-theme="dark"] .bento-btn:not(.bento-btn-accent) {
+  background: #1c1c1c;
+  color: var(--ink);
+}
+.bento[data-theme="dark"] .bento-tag {
+  color: #c9c6bf;
+}
+.bento[data-theme="dark"] .bento-tile:hover .bento-arrow {
+  background: var(--accent-c);
+  color: #fff;
+}
+.bento[data-theme="dark"] .bento-phone {
+  border-color: #3a3a3a;
+}
+.bento[data-theme="dark"] .bento-phone-notch {
+  background: #3a3a3a;
+}
+.bento[data-theme="dark"] .bento-work:nth-child(odd) .bento-phone {
+  background: linear-gradient(160deg, #2c2c2c 0%, #1b1b1b 100%);
+}
+.bento[data-theme="dark"] .bento-hero {
+  border-color: #333;
+}
+
+/* Panel sheet in dark */
+.bento[data-theme="dark"] .sheet-backdrop {
+  background: rgb(0 0 0 / 0.55);
+}
+.bento[data-theme="dark"] .sheet {
+  background: #141414;
+  color: var(--ink);
+  box-shadow: 0 0 0 1px #262626, 0 40px 80px -30px rgb(0 0 0 / 0.8);
+}
+.bento[data-theme="dark"] .sheet p {
+  color: #b5b2aa;
+}
+.bento[data-theme="dark"] .sheet-close,
+.bento[data-theme="dark"] .detail-back,
+.bento[data-theme="dark"] .sticker {
+  background: #222;
+  color: var(--ink);
+}
+.bento[data-theme="dark"] .polaroid {
+  background: #1d1d1d;
+}
+.bento[data-theme="dark"] .polaroid:hover {
+  background: #222;
+}
+.bento[data-theme="dark"] .polaroid-kicker {
+  color: #9b988f;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .device-switch-pin {
+    transition: none;
+  }
+}
+
+/* ---- Device back to full width; theme switch lives in the page header -- */
+.bento-hero {
+  padding: 12px 12px 14px;
+}
+.bento-head nav {
+  margin-left: auto;
+}
+.knob-value {
+  font-size: 0.56rem;
+  color: #8d8a84;
+}
+
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: #f6f5f3;
+  border: 1px solid var(--card-stroke);
+  color: var(--ink);
+}
+.theme-icon {
+  width: 15px;
+  height: 15px;
+  color: #9b988f;
+  transition: color 200ms;
+}
+.theme-switch[aria-checked="false"] .theme-icon-sun,
+.theme-switch[aria-checked="true"] .theme-icon-moon {
+  color: var(--accent-c);
+}
+.theme-track {
+  position: relative;
+  width: 36px;
+  height: 18px;
+  border-radius: 999px;
+  background: #1d1d1b;
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.6);
+}
+.theme-pin {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #ffb27f 0%, var(--accent-c) 55%, #b84306 100%);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
+  transition: left 360ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.theme-switch[aria-checked="true"] .theme-pin {
+  left: 20px;
+}
+.bento[data-theme="dark"] .theme-switch {
+  background: #1a1a1a;
+}
+.bento[data-theme="dark"] .theme-track {
+  background: #050505;
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-pin {
+    transition: none;
+  }
+}
+
+/* ---- Work tiles: title on top, dotted phone print rising from the bottom - */
+.bento-work .bento-copy {
+  position: relative;
+  padding: 20px 60px 0 20px;
+  max-width: none;
+}
+.bento-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 1;
+  width: 70%;
+  height: auto;
+  max-height: 60%;
+  object-fit: contain;
+  object-position: 50% 100%;
+  translate: -50% 0;
+  transition:
+    translate 500ms var(--ease-out),
+    scale 500ms var(--ease-out);
+  transform-origin: 50% 100%;
+}
+.bento-work:hover .bento-dots {
+  translate: -50% -6px;
+  scale: 1.03;
+}
+@media (max-width: 1023px), (max-height: 599px) {
+  .bento-work {
+    min-height: 300px;
+  }
+  .bento-dots {
+    width: 52%;
+    max-height: 58%;
+  }
+}
+
+/* Dotted accent on the statement card, same language as the screen. */
+.bento-intro::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 70%;
+  height: 60%;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgb(var(--accent-rgb) / 0.55) 1.1px, transparent 1.6px);
+  background-size: 9px 9px;
+  -webkit-mask-image: radial-gradient(90% 90% at 100% 100%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(90% 90% at 100% 100%, #000 0%, transparent 70%);
+}
+.bento-intro > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Centre device follows the theme: white in light, black in dark ---- */
+.bento[data-theme="light"] .bento-hero {
+  color: var(--ink);
+  background:
+    radial-gradient(120% 60% at 30% 0%, rgb(255 255 255 / 1) 0%, transparent 60%),
+    linear-gradient(165deg, #ffffff 0%, #f1f1ef 45%, #e1e1de 100%);
+  border-color: #dcdbd7;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 1),
+    inset 0 -18px 30px -20px rgb(0 0 0 / 0.12),
+    0 2px 4px rgb(0 0 0 / 0.05),
+    0 30px 60px -30px rgb(0 0 0 / 0.3);
+}
+.bento[data-theme="light"] .device-screen-hero {
+  background-color: #f5f4f1;
+  box-shadow:
+    inset 0 2px 10px rgb(0 0 0 / 0.12),
+    inset 0 0 0 1px rgb(0 0 0 / 0.07);
+}
+.bento[data-theme="light"] .device-screen-hero::after {
+  background: linear-gradient(155deg, rgb(255 255 255 / 0.6) 0%, transparent 34%);
+}
+.bento[data-theme="light"] .device-screen-hero .dot-fallback {
+  filter: grayscale(1) contrast(1.1);
+}
+.bento[data-theme="light"] .device-screen-hero .bento-roles {
+  background: rgb(255 255 255 / 0.82);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06), 0 10px 24px -14px rgb(0 0 0 / 0.3);
+}
+.bento[data-theme="light"] .knob-label {
+  color: #3b3a36;
+}
+.bento[data-theme="light"] .knob-value {
+  color: #8a8882;
+}
+.bento[data-theme="light"] .bento-hero .knob {
+  background: #e9e8e4;
+  box-shadow:
+    inset 0 2px 5px rgb(0 0 0 / 0.2),
+    0 1px 0 rgb(255 255 255 / 0.9);
+}
+.bento[data-theme="light"] .bento-hero .knob-cap {
+  background: radial-gradient(circle at 38% 30%, #ffffff 0%, #f1efeb 40%, #cfccc5 100%);
+  box-shadow:
+    0 5px 10px -3px rgb(0 0 0 / 0.35),
+    inset 0 1px 0 rgb(255 255 255 / 1),
+    inset 0 -2px 4px rgb(0 0 0 / 0.12);
+}
+.bento[data-theme="light"] .bento-hero .knob-cap::before {
+  background: repeating-conic-gradient(rgb(0 0 0 / 0.1) 0deg 3deg, transparent 3deg 7deg);
+}
+
+/* ---- Work tiles: one dotted icon, cut off by the bottom edge ----------- */
+.bento-dot-fill {
+  /* White dots: the icon is a mask over the accent gradient. */
+  fill: #fff;
+}
+.bento-icon {
+  position: absolute;
+  right: -4%;
+  bottom: -16%;
+  z-index: 1;
+  width: 56%;
+  height: auto;
+  aspect-ratio: 1;
+  rotate: -10deg;
+  transition:
+    rotate 500ms var(--ease-out),
+    translate 500ms var(--ease-out);
+}
+.bento-work:hover .bento-icon {
+  rotate: 0deg;
+  translate: 0 -6px;
+}
+@media (max-width: 1023px), (max-height: 599px) {
+  .bento-work {
+    min-height: 220px;
+  }
+  .bento-icon {
+    width: 36%;
+    bottom: -18%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bento-icon {
+    transition: none;
+  }
+}
+
+/* ---- Pressable tilt: the card dips on the side the cursor is over ------- */
+.bento-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition:
+    transform 650ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 350ms var(--ease-out);
+}
+.bento-card[data-tilt="on"],
+.bento-tile:hover {
+  transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry)) scale(0.985);
+  transition-duration: 180ms, 350ms;
+}
+.bento-tile:active {
+  transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry)) scale(0.97);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bento-card,
+  .bento-card[data-tilt="on"],
+  .bento-tile:hover {
+    transform: none;
+  }
+}
+
+/* ---- Continuous corners (Figma corner smoothing 100%) ------------------- */
+/* --sq-r is the Figma radius; a squircle needs ~1.9x the box to match it. */
+.bento-card {
+  --sq-r: 28px;
+}
+.device-screen {
+  --sq-r: 16px;
+}
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento-card {
+    --sq-r: 22px;
+  }
+}
+@supports (corner-shape: squircle) {
+  .bento-card,
+  .device-screen {
+    border-radius: calc(var(--sq-r) * 1.9);
+    corner-shape: squircle;
+  }
+  .device-screen::after {
+    corner-shape: squircle;
+  }
+}
+.sq-edge {
+  display: none;
+}
+/* Fallback (no corner-shape): JS clips each card and draws its hairline. */
+.bento[data-squircle="js"] .bento-card {
+  border-color: transparent;
+  border-radius: 0;
+}
+.bento[data-squircle="js"] .sq-edge {
+  display: block;
+  position: absolute;
+  inset: -1px;
+  z-index: 3;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  pointer-events: none;
+  overflow: visible;
+}
+.bento[data-squircle="js"] .sq-edge path {
+  fill: none;
+  stroke: var(--card-stroke);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ---- Living icons: dense dots, each icon moves in its own way ----------- */
+.bento-icon path,
+.bento-icon circle {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.bento-icon-product path:nth-child(1) {
+  animation: layer-lift 3.2s ease-in-out infinite;
+}
+.bento-icon-product path:nth-child(2) {
+  animation: layer-lift-mid 3.2s ease-in-out infinite;
+}
+.bento-icon-product path:nth-child(3) {
+  animation: layer-drop 3.2s ease-in-out infinite;
+}
+@keyframes layer-lift {
+  50% {
+    translate: 0 -1.8px;
+  }
+}
+@keyframes layer-lift-mid {
+  50% {
+    translate: 0 -0.5px;
+  }
+}
+@keyframes layer-drop {
+  50% {
+    translate: 0 1px;
+  }
+}
+.bento-icon-motion path {
+  animation: play-push 2.4s cubic-bezier(0.5, 0, 0.2, 1) infinite;
+}
+@keyframes play-push {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1;
+  }
+  35% {
+    translate: 1.4px 0;
+    scale: 1.06;
+  }
+  55% {
+    translate: -0.4px 0;
+    scale: 0.98;
+  }
+}
+.bento-icon-ai path:nth-child(1) {
+  animation: spark-main 2.8s ease-in-out infinite;
+}
+.bento-icon-ai path:nth-child(2),
+.bento-icon-ai path:nth-child(3) {
+  animation: spark-blink 2.8s ease-in-out infinite;
+}
+.bento-icon-ai circle {
+  animation: spark-blink 2.8s ease-in-out 1.4s infinite;
+}
+@keyframes spark-main {
+  0%,
+  100% {
+    scale: 1;
+    rotate: 0deg;
+  }
+  50% {
+    scale: 1.08;
+    rotate: 12deg;
+  }
+}
+@keyframes spark-blink {
+  0%,
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+  50% {
+    opacity: 0.15;
+    scale: 0.6;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bento-icon path,
+  .bento-icon circle {
+    animation: none;
+  }
+}
+
+/* ===========================================================================
+ * Accent = the "Book a Call" gradient from the reference (peach → coral →
+ * periwinkle blue). Shared by both themes, and it drifts slowly.
+ * ======================================================================== */
+@property --acc-x {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 20%;
+}
+@property --acc-y {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+.bento {
+  --acc-peach: #ffb347;
+  --acc-orange: #ff6a2c;
+  --acc-coral: #ff4f8b;
+  --acc-blue: #7b3cff;
+  --acc-violet: #b05cff;
+  --accent-c: #8b4dff;
+  --accent-rgb: 139 77 255;
+}
+
+/* Surfaces: a warm haze moving over a blue base, like the reference button. */
+.bento-btn-accent,
+.bento-pill-accent,
+.bento[data-theme="dark"] .bento-pill-accent,
+.bento-about-pill,
+.bento-tile:hover .bento-arrow,
+.bento[data-theme="dark"] .bento-tile:hover .bento-arrow,
+.sheet-close:hover,
+.bento-contact-btn,
+.theme-rail-hl {
+  background:
+    radial-gradient(70% 95% at var(--acc-x) var(--acc-y), var(--acc-peach) 0%, rgb(255 179 71 / 0) 70%),
+    radial-gradient(60% 80% at calc(100% - var(--acc-x)) 10%, var(--acc-coral) 0%, rgb(255 79 139 / 0) 75%),
+    linear-gradient(180deg, var(--acc-orange) 0%, var(--acc-coral) 45%, var(--acc-violet) 78%, var(--acc-blue) 100%);
+  border-color: transparent;
+  color: #fff;
+  text-shadow: 0 1px 2px rgb(90 20 80 / 0.3);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    inset 0 -6px 12px -6px rgb(70 20 160 / 0.3),
+    0 10px 22px -10px rgb(var(--accent-rgb) / 0.7);
+  animation: accent-drift 7s ease-in-out infinite alternate;
+}
+.bento-pill-accent:hover,
+.bento-btn-accent:hover {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    inset 0 -6px 12px -6px rgb(40 40 160 / 0.35),
+    0 14px 28px -10px rgb(var(--accent-rgb) / 0.85);
+}
+@keyframes accent-drift {
+  0% {
+    --acc-x: 12%;
+    --acc-y: 0%;
+  }
+  50% {
+    --acc-x: 55%;
+    --acc-y: 18%;
+  }
+  100% {
+    --acc-x: 88%;
+    --acc-y: 4%;
+  }
+}
+
+/* Small marks: dots and pins carry the same blend. */
+.bento-dot,
+.bento-name-dot,
+.knob-dot,
+.theme-pin {
+  background: linear-gradient(160deg, var(--acc-peach) 0%, var(--acc-coral) 40%, var(--acc-blue) 100%);
+}
+.knob-dot {
+  box-shadow: 0 0 6px rgb(var(--accent-rgb) / 0.7);
+}
+
+/* Words: gradient text that drifts. */
+.bento-statement em,
+.bento-roles em,
+.bento-count,
+.sheet-kicker {
+  background: linear-gradient(100deg, var(--acc-orange) 0%, var(--acc-coral) 35%, var(--acc-violet) 68%, var(--acc-blue) 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: accent-slide 6s ease-in-out infinite alternate;
+}
+@keyframes accent-slide {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+.theme-switch[aria-checked="true"] .theme-icon-moon {
+  color: var(--acc-violet);
+}
+.theme-switch[aria-checked="false"] .theme-icon-sun {
+  color: var(--acc-orange);
+}
+
+/* Intro corner dots */
+.bento-intro::after {
+  background-image: radial-gradient(circle, rgb(var(--accent-rgb) / 0.5) 1.1px, transparent 1.6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-btn-accent,
+  .bento-pill-accent,
+  .bento-about-pill,
+  .bento-tile:hover .bento-arrow,
+  .bento-statement em,
+  .bento-roles em,
+  .bento-count,
+  .sheet-kicker {
+    animation: none;
+  }
+}
+
+/* ===========================================================================
+ * Light theme from the reference: grey page, soft white cards with a thick
+ * glossy rim, near-black type, grey secondary text.
+ * ======================================================================== */
+.bento:not([data-theme="dark"]) {
+  --ink: #0b0b0b;
+  --muted: #9a9a9a;
+  --card-bg: linear-gradient(180deg, #fbfbfb 0%, #f6f6f6 60%, #f2f2f2 100%);
+  --card-stroke: #ffffff;
+  --card-shadow:
+    inset 0 2px 1px rgb(255 255 255 / 1),
+    inset 0 0 0 1.5px rgb(255 255 255 / 0.9),
+    inset 0 -10px 22px -14px rgb(0 0 0 / 0.08),
+    0 1px 2px rgb(0 0 0 / 0.04),
+    0 22px 44px -24px rgb(0 0 0 / 0.22);
+  background-color: #e2e2e2;
+  background-image:
+    radial-gradient(70% 75% at 0% 0%, rgb(255 122 47 / 0.34) 0%, rgb(255 122 47 / 0) 70%),
+    radial-gradient(60% 65% at 100% 8%, rgb(255 79 139 / 0.2) 0%, rgb(255 79 139 / 0) 70%),
+    radial-gradient(75% 80% at 100% 100%, rgb(var(--accent-rgb) / 0.32) 0%, rgb(var(--accent-rgb) / 0) 70%),
+    radial-gradient(55% 60% at 0% 100%, rgb(176 92 255 / 0.16) 0%, rgb(176 92 255 / 0) 70%);
+  background-attachment: fixed;
+  color: var(--ink);
+}
+.bento:not([data-theme="dark"])::before {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 0 0 / 0.035) 1px, transparent 1px);
+}
+.bento:not([data-theme="dark"]) .bento-card {
+  border: 1.5px solid #fff;
+}
+.bento:not([data-theme="dark"]) .bento-intro {
+  background: var(--card-bg);
+  box-shadow:
+    var(--card-shadow),
+    0 40px 80px -40px rgb(var(--accent-rgb) / 0.3);
+}
+.bento:not([data-theme="dark"]) .bento-pill:not(.bento-pill-accent),
+.bento:not([data-theme="dark"]) .bento-tag,
+.bento:not([data-theme="dark"]) .bento-arrow,
+.bento:not([data-theme="dark"]) .theme-switch {
+  background: #f7f7f7;
+  border-color: #fff;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 6px 14px -8px rgb(0 0 0 / 0.18);
+}
+.bento:not([data-theme="dark"]) .bento-pill:not(.bento-pill-accent):hover {
+  background: #fff;
+}
+.bento:not([data-theme="dark"]) .bento-p,
+.bento:not([data-theme="dark"]) .knob-value {
+  color: var(--muted);
+}
+.bento-btn-accent:hover {
+  translate: 0 -2px;
+}
+
+.bento[data-theme="dark"] {
+  background-image:
+    radial-gradient(70% 75% at 0% 0%, rgb(255 106 44 / 0.22) 0%, rgb(255 106 44 / 0) 70%),
+    radial-gradient(60% 65% at 100% 8%, rgb(255 79 139 / 0.12) 0%, rgb(255 79 139 / 0) 70%),
+    radial-gradient(75% 80% at 100% 100%, rgb(var(--accent-rgb) / 0.3) 0%, rgb(var(--accent-rgb) / 0) 70%),
+    radial-gradient(55% 60% at 0% 100%, rgb(176 92 255 / 0.12) 0%, rgb(176 92 255 / 0) 70%);
+  background-attachment: fixed;
+}
+
+
+/* ---- Theme rail: a pill fixed to the page edge, outside the grid -------- */
+.theme-rail {
+  position: fixed;
+  z-index: 40;
+  right: clamp(12px, 2.2vw, 32px);
+  top: 50%;
+  translate: 0 -50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgb(247 247 247 / 0.75);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1.5px solid #fff;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 16px 34px -16px rgb(0 0 0 / 0.3);
+}
+.theme-rail button {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 300ms var(--ease-out);
+}
+.theme-rail button:hover {
+  color: var(--ink);
+}
+.theme-rail button[aria-checked="true"] {
+  color: #fff;
+}
+.theme-rail-hl {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  transition: translate 500ms cubic-bezier(0.34, 1.4, 0.5, 1);
+}
+.theme-rail[data-active="dark"] .theme-rail-hl {
+  translate: 0 44px;
+}
+.theme-rail-label {
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+  padding: 8px 0 6px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.bento[data-theme="dark"] .theme-rail {
+  background: rgb(22 22 22 / 0.75);
+  border-color: #2a2a2a;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 16px 34px -16px rgb(0 0 0 / 0.8);
+}
+@media (max-width: 1023px), (max-height: 599px) {
+  .theme-rail {
+    top: auto;
+    bottom: 16px;
+    translate: none;
+  }
+  .theme-rail-label {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-rail-hl,
+  .bento-contact-btn {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ---- Title: name and role, centred above the grid ----------------------- */
+.bento-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 6px;
+  text-align: center;
+}
+.bento-title h1 {
+  font-family: var(--font-block), sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.2rem, 3.6vw, 3.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+}
+.bento-title p {
+  font-size: clamp(0.9rem, 1.05vw, 1.05rem);
+  font-weight: 500;
+  color: var(--muted);
+}
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento-title {
+    width: 60vw;
+    margin-inline: auto;
+  }
 }

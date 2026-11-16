@@ -6,7 +6,7 @@ import { Reveal, SplitReveal } from "@/components/ui/reveal";
 import { HeroAtmosphere } from "./hero-atmosphere";
 
 /**
- * A dark surface in both themes: the canyon sits behind, the copy reads first,
+ * A white surface: the liquid type sits behind, the copy reads first,
  * and the foot of the section dissolves into the page.
  */
 export function Hero(): ReactNode {
@@ -17,7 +17,7 @@ export function Hero(): ReactNode {
     <section
       id="top"
       aria-labelledby="hero-title"
-      className="on-dark relative isolate flex min-h-[78svh] flex-col overflow-hidden md:min-h-[86svh] lg:min-h-[94svh]"
+      className="relative isolate flex min-h-[78svh] flex-col overflow-hidden md:min-h-[86svh] lg:min-h-[94svh]"
     >
       <HeroAtmosphere />
 
@@ -71,7 +71,7 @@ export function Hero(): ReactNode {
         </div>
       </Reveal>
 
-      {/* Dark to page ground, so the canyon never ends on a hard edge. */}
+      {/* Into the page ground, so the canyon never ends on a hard edge. */}
       <div aria-hidden="true" className="hero-fade h-[clamp(4rem,12svh,8rem)]" />
     </section>
   );

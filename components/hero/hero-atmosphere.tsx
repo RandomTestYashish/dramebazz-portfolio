@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { LiquidAscii, type LiquidAsciiProps } from "@/components/shaders/liquid-ascii";
 import { useMediaQuery } from "@/lib/use-media-query";
 
-// A slow pool of type: graphite characters on near-black, settling at the
+// A slow pool of type: soft grey characters on white, settling at the
 // foot of the hero and sloshing gently when the cursor is still.
 const SHARED: LiquidAsciiProps = {
   speed: 0.7,
@@ -17,8 +17,8 @@ const SHARED: LiquidAsciiProps = {
   cursorRadius: 0.18,
   cursorForce: 66,
   characters: " ·:-~=+*#%@",
-  color: "#8d8c86",
-  backgroundColor: "#0e0e0d",
+  color: "#b4b3ad",
+  backgroundColor: "#ffffff",
   fontFamily: "var(--font-geist-mono)",
   opacity: 0.75,
   autoWave: true,

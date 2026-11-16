@@ -5,7 +5,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { profile } from "@/content";
 import { duration, ease } from "@/lib/tokens";
-import { ThemeToggle } from "./theme-toggle";
 import { useActiveSection } from "./use-active-section";
 
 const NAV_ITEMS = [
@@ -23,7 +22,7 @@ export function Nav(): ReactNode {
   const [overHero, setOverHero] = useState(true);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Take the hero's dark palette while the hero sits under the nav band.
+  // Lighter header gradient while the hero sits under the nav band.
   useEffect(() => {
     const hero = document.getElementById("top");
     if (!hero) return;
@@ -53,14 +52,12 @@ export function Nav(): ReactNode {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-(--z-nav) transition-colors duration-500 ${
-        overHero ? "on-dark" : ""
-      }`}
+      className="fixed inset-x-0 top-0 z-(--z-nav) transition-colors duration-500"
       // Solid at the top edge, fading out, so content passes under quietly.
       style={{
         background:
           overHero
-            ? "linear-gradient(to bottom, rgb(8 8 8 / 0.35), transparent)"
+            ? "linear-gradient(to bottom, rgb(255 255 255 / 0.6), transparent)"
             : "linear-gradient(to bottom, var(--background) 55%, transparent)",
       }}
     >
@@ -116,7 +113,6 @@ export function Nav(): ReactNode {
             />
             {profile.availability.label}
           </p>
-          <ThemeToggle />
 
           <div ref={menuRef} className="relative md:hidden">
             <button
