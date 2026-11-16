@@ -4,12 +4,13 @@ import {
   ArrowUpRight,
   Layers,
   Moon,
+  Pause,
   Play,
   Sparkles,
   Sun,
   type LucideIcon,
 } from "lucide-react";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, motion as m } from "motion/react";
 import Image from "next/image";
 import {
   useCallback,
@@ -25,6 +26,7 @@ import {
 import { PanelSheet } from "@/components/scene/panel-sheet";
 import { panels, type PanelId } from "@/content/scene";
 import { DotMatrix } from "./dot-matrix";
+import { Intro, NAME_ID, ROLE_ID, type IntroPhase } from "./intro";
 import { applySquircles, nativeSquircle } from "./squircle";
 
 type OpenFn = (id: PanelId, from: HTMLElement) => void;
@@ -87,16 +89,18 @@ const WORK: { id: PanelId; icon: LucideIcon }[] = [
 const firstLine = (text: string): string => text.split(/(?<=\.)\s/)[0] ?? text;
 
 /** Dial detents: three positions, like a real stepped dial. */
-const DETENT = [-60, 0, 60] as const;
 const MOTION_LABEL = ["Breathe", "Wave", "Still"] as const;
 const DENSITY_LABEL = ["High", "Ultra", "Medium"] as const;
 const TONE_LABEL = ["Ink", "Accent", "Duo"] as const;
+
+const SETTLE = { duration: 0.9, ease: [0.22, 1, 0.36, 1] } as const;
 
 const delay = (i: number): CSSProperties =>
   ({ "--enter-delay": `${60 + i * 70}ms` }) as CSSProperties;
 
 export function Bento(): ReactNode {
   const [open, setOpen] = useState<PanelId | null>(null);
+  const [phase, setPhase] = useState<IntroPhase>("hello");
   const returnFocus = useRef<HTMLElement | null>(null);
   const theme = useSyncExternalStore(subscribeTheme, readTheme, serverTheme);
   const reduceMotion = useSyncExternalStore(subscribeReduce, readReduce, serverReduce);
@@ -109,19 +113,16 @@ export function Bento(): ReactNode {
     {
       label: "Density",
       value: DENSITY_LABEL[density as 0 | 1 | 2],
-      angle: DETENT[density as 0 | 1 | 2],
       turn: () => setDensity((d) => (d + 1) % 3),
     },
     {
       label: "Motion",
       value: MOTION_LABEL[motion as 0 | 1 | 2],
-      angle: DETENT[motion as 0 | 1 | 2],
       turn: () => setMotion((m) => (m + 1) % 3),
     },
     {
       label: "Tone",
       value: TONE_LABEL[tone as 0 | 1 | 2],
-      angle: DETENT[tone as 0 | 1 | 2],
       turn: () => setTone((t) => (t + 1) % 3),
     },
   ];
@@ -180,6 +181,19 @@ export function Bento(): ReactNode {
     tilted.current = null;
   };
 
+  // Intro timeline: "Hello," → the full line → it settles into the title.
+  useEffect(() => {
+    const quick = window.matchMedia(REDUCE_QUERY).matches;
+    const timers = quick
+      ? [window.setTimeout(() => setPhase("done"), 0)]
+      : [
+          window.setTimeout(() => setPhase((p) => (p === "hello" ? "line" : p)), 1100),
+          window.setTimeout(() => setPhase("done"), 3500),
+        ];
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, []);
+  const skipIntro = useCallback(() => setPhase("done"), []);
+
   useEffect(() => {
     const root = document.documentElement;
     root.style.overflow = open ? "hidden" : "";
@@ -189,12 +203,39 @@ export function Bento(): ReactNode {
   }, [open]);
 
   return (
-    <div ref={rootRef} className="bento" data-theme={current}>
-      <header className="bento-title enter" style={delay(0)}>
+    <div
+      ref={rootRef}
+      className="bento"
+      data-theme={current}
+      data-intro={phase === "done" ? "done" : "playing"}
+    >
+      <AnimatePresence>
+        {phase === "done" ? null : (
+          <Intro key="intro" phase={phase} onSkip={skipIntro} />
+        )}
+      </AnimatePresence>
+
+      {/* The title is where the intro's name and role come to rest. */}
+      <header className="bento-title">
         <h1>
-          Yashish<span className="sr-only"> Kpur</span>
+          {phase === "done" ? (
+            <m.span layoutId={NAME_ID} transition={SETTLE} className="wordmark">
+              YASHISH
+            </m.span>
+          ) : (
+            <span className="title-wait wordmark">YASHISH</span>
+          )}
+          <span className="sr-only"> Kpur</span>
         </h1>
-        <p>Product and Motion Designer</p>
+        <p>
+          {phase === "done" ? (
+            <m.span layoutId={ROLE_ID} transition={SETTLE}>
+              Product and Motion Designer
+            </m.span>
+          ) : (
+            <span className="title-wait">Product and Motion Designer</span>
+          )}
+        </p>
       </header>
 
       {/* Theme: its own pill on the page edge, outside the grid. */}
@@ -303,12 +344,13 @@ export function Bento(): ReactNode {
           <SquircleEdge />
         </section>
 
-        {/* Centre: a small black device. Dot screen, theme switch, dials. */}
+        {/* Centre: a retro player. LCD strip, dot screen, three dials. */}
         <section
           aria-label="About Yashish"
           className="bento-card bento-device bento-hero enter"
           style={{ gridArea: "person", ...delay(2) }}
         >
+          <PlayerDisplay playing={motion !== 2} dials={dials} />
           <button
             type="button"
             aria-haspopup="dialog"
@@ -339,21 +381,6 @@ export function Bento(): ReactNode {
             </span>
           </button>
 
-          <div className="device-controls">
-            {dials.map((d) => (
-              <button
-                key={d.label}
-                type="button"
-                onClick={d.turn}
-                aria-label={`${d.label}: ${d.value}. Turn to change.`}
-                className="knob-btn"
-              >
-                <span className="knob-label">{d.label}</span>
-                <Knob angle={d.angle} />
-                <span className="knob-value">{d.value}</span>
-              </button>
-            ))}
-          </div>
           <SquircleEdge />
         </section>
 
@@ -422,16 +449,73 @@ export function Bento(): ReactNode {
   );
 }
 
-function Knob({ angle }: { angle: number }): ReactNode {
+/** Length of the pretend track, in seconds (3:42). */
+const TRACK = 222;
+const MARQUEE = "Now playing \u00b7 Yashish \u00b7 Product and Motion Designer \u00b7 ";
+
+type Dial = { label: string; value: string; turn: () => void };
+
+/**
+ * The player's LCD: name and clock, a scrolling title, a progress line and
+ * the player's own controls (density, motion, tone). The clock writes to the
+ * DOM directly so it never re-renders React.
+ */
+function PlayerDisplay({
+  playing,
+  dials,
+}: {
+  playing: boolean;
+  dials: Dial[];
+}): ReactNode {
+  const timeRef = useRef<HTMLSpanElement>(null);
+  const progressRef = useRef<HTMLSpanElement>(null);
+  const elapsed = useRef(0);
+
+  useEffect(() => {
+    if (!playing) return;
+    const id = window.setInterval(() => {
+      elapsed.current = (elapsed.current + 1) % TRACK;
+      const t = elapsed.current;
+      const mm = String(Math.floor(t / 60)).padStart(2, "0");
+      const ss = String(t % 60).padStart(2, "0");
+      if (timeRef.current) timeRef.current.textContent = `${mm}:${ss}`;
+      progressRef.current?.style.setProperty("--p", (t / TRACK).toFixed(4));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [playing]);
+
   return (
-    <span
-      aria-hidden="true"
-      className="knob"
-      style={{ "--angle": `${angle}deg` } as CSSProperties}
-    >
-      <span className="knob-cap">
-        <span className="knob-dot" />
-      </span>
-    </span>
+    <div className="lcd" data-playing={playing}>
+      <div className="lcd-top" aria-hidden="true">
+        <span className="lcd-state">
+          {playing ? <Play className="lcd-glyph" /> : <Pause className="lcd-glyph" />}
+          YASHISH
+        </span>
+        <span className="lcd-time" ref={timeRef}>
+          00:00
+        </span>
+      </div>
+      <div className="lcd-marquee" aria-hidden="true">
+        <span className="lcd-track">
+          <span>{MARQUEE}</span>
+          <span>{MARQUEE}</span>
+        </span>
+      </div>
+      <span className="lcd-progress" aria-hidden="true" ref={progressRef} />
+      <div className="lcd-controls">
+        {dials.map((d) => (
+          <button
+            key={d.label}
+            type="button"
+            onClick={d.turn}
+            aria-label={`${d.label}: ${d.value}. Press to change.`}
+            className="lcd-btn"
+          >
+            <span className="lcd-btn-label">{d.label}</span>
+            <span className="lcd-btn-value">{d.value}</span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

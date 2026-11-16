@@ -2932,3 +2932,504 @@ html[data-theme-anim="1"]::view-transition-new(root) {
     bottom: calc(var(--icon) * -0.24);
   }
 }
+
+/* ===========================================================================
+ * Retro player: the centre device reads as a big, raised music player.
+ * ======================================================================== */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento-grid {
+    height: min(calc(100dvh - 190px), 54vw);
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.5fr) minmax(0, 0.9fr);
+    grid-template-rows: minmax(0, 0.8fr) minmax(0, 2fr) minmax(0, 0.8fr);
+  }
+  .bento-hero {
+    z-index: 2;
+    scale: 1.035;
+    padding: 12px 12px 12px;
+    gap: 10px;
+  }
+  .bento-hero .knob {
+    --size: clamp(40px, 3.4vw, 56px);
+  }
+  .bento-hero .knob-btn {
+    gap: 4px;
+  }
+  .bento-intro .bento-statement {
+    font-size: clamp(1rem, 1.45vw, 1.5rem);
+    max-width: 34ch;
+  }
+  .bento-intro {
+    row-gap: 6px;
+  }
+}
+.bento-hero {
+  box-shadow:
+    var(--card-shadow),
+    0 40px 70px -30px rgb(0 0 0 / 0.35),
+    0 30px 80px -40px rgb(var(--accent-rgb) / 0.45);
+}
+
+/* LCD strip */
+.lcd {
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px 9px;
+  border-radius: 12px;
+  corner-shape: squircle;
+  background:
+    radial-gradient(120% 140% at 50% 0%, rgb(255 255 255 / 0.06) 0%, transparent 60%),
+    linear-gradient(180deg, #121212 0%, #070707 100%);
+  box-shadow:
+    inset 0 2px 6px rgb(0 0 0 / 0.9),
+    inset 0 0 0 1px rgb(255 255 255 / 0.05),
+    0 1px 0 rgb(255 255 255 / 0.6);
+  color: #ff9ac4;
+  overflow: hidden;
+}
+/* Faint LCD scan lines */
+.lcd::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 3px);
+}
+.lcd-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 1rem;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  color: #f4e9ff;
+  text-shadow: 0 0 6px rgb(var(--accent-rgb) / 0.8);
+}
+.lcd-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 62px;
+}
+.lcd-glyph {
+  width: 10px;
+  height: 10px;
+  fill: currentColor;
+  stroke: none;
+}
+.lcd[data-playing="true"] .lcd-state {
+  animation: lcd-blink 1.6s steps(1) infinite;
+}
+@keyframes lcd-blink {
+  50% {
+    opacity: 0.45;
+  }
+}
+.lcd-time {
+  min-width: 44px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.lcd-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+}
+.lcd-eq i {
+  width: 3px;
+  height: 100%;
+  border-radius: 1px;
+  background: linear-gradient(0deg, var(--acc-orange) 0%, var(--acc-coral) 50%, var(--acc-violet) 100%);
+  box-shadow: 0 0 5px rgb(var(--accent-rgb) / 0.6);
+  transform-origin: 50% 100%;
+  scale: 1 0.3;
+  animation: lcd-eq calc(420ms + var(--i) * 53ms) ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -170ms);
+}
+@keyframes lcd-eq {
+  0% {
+    scale: 1 0.18;
+  }
+  40% {
+    scale: 1 0.9;
+  }
+  70% {
+    scale: 1 0.45;
+  }
+  100% {
+    scale: 1 1;
+  }
+}
+.lcd-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+}
+.lcd-track {
+  display: inline-flex;
+  white-space: nowrap;
+  font-family: var(--font-lcd), monospace;
+  font-weight: 900;
+  font-size: clamp(1.1rem, 1.5vw, 1.5rem);
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, var(--acc-orange), var(--acc-coral) 40%, var(--acc-violet) 75%, var(--acc-orange));
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 6px rgb(255 79 139 / 0.45));
+  animation:
+    lcd-scroll 16s linear infinite,
+    accent-slide 6s ease-in-out infinite alternate;
+}
+.lcd-track span {
+  padding-right: 0.6em;
+}
+@keyframes lcd-scroll {
+  to {
+    translate: -50% 0;
+  }
+}
+.lcd-progress {
+  --p: 0;
+  position: relative;
+  height: 3px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.1);
+  overflow: hidden;
+}
+.lcd-progress::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 50%;
+  scale: var(--p) 1;
+  background: linear-gradient(90deg, var(--acc-orange), var(--acc-coral), var(--acc-violet));
+  box-shadow: 0 0 6px rgb(var(--accent-rgb) / 0.7);
+  transition: scale 1s linear;
+}
+.lcd[data-playing="false"] .lcd-eq i,
+.lcd[data-playing="false"] .lcd-track {
+  animation-play-state: paused;
+}
+
+/* Pixel type for the dials, like printed labels on an old deck. */
+.bento-hero .knob-label,
+.bento-hero .knob-value {
+  font-family: var(--font-pixel), monospace;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.bento-hero .knob-label {
+  font-size: 0.85rem;
+}
+.bento-hero .knob-value {
+  font-size: 0.8rem;
+}
+.bento-hero .bento-about-pill {
+  font-family: var(--font-pixel), monospace;
+  font-weight: 400;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lcd-eq i,
+  .lcd-track,
+  .lcd-state {
+    animation: none !important;
+  }
+  .lcd-progress::before {
+    transition: none;
+  }
+}
+
+/* Short screens: the player trims its chrome so the screen keeps room. */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento-hero {
+    container-type: size;
+  }
+}
+@container (max-height: 340px) {
+  .bento-hero .knob-value {
+    display: none;
+  }
+  .bento-hero .knob {
+    --size: 34px;
+  }
+  .bento-hero .knob-label {
+    font-size: 0.72rem;
+  }
+  .bento-hero .lcd {
+    padding: 6px 10px 7px;
+    gap: 2px;
+  }
+  .bento-hero .lcd-track {
+    font-size: 1.05rem;
+  }
+  .bento-hero .lcd-top {
+    font-size: 0.85rem;
+  }
+}
+
+/* ===========================================================================
+ * Loading intro: background only, "Hello," then the line, then it settles
+ * into the title while the tiles come in.
+ * ======================================================================== */
+.bento {
+  /* Tiles wait for the intro (constant, so it never restarts an animation). */
+  --intro-delay: 3600ms;
+}
+.bento .enter {
+  animation-delay: calc(var(--enter-delay, 0ms) + var(--intro-delay));
+}
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background-color: inherit;
+  background-image: inherit;
+  background-attachment: fixed;
+  cursor: pointer;
+  /* Failsafe if scripts never run. */
+  animation: intro-failsafe 500ms 6.5s forwards;
+}
+@keyframes intro-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+.intro-text {
+  max-width: 24ch;
+  text-align: center;
+  font-family: var(--font-block), sans-serif;
+  font-weight: 600;
+  font-size: clamp(2rem, 4.4vw, 4.4rem);
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+  color: var(--muted);
+}
+.intro-hello {
+  display: inline-block;
+  padding-bottom: 0.08em;
+  font-weight: 700;
+  background: linear-gradient(100deg, var(--acc-orange) 0%, var(--acc-coral) 45%, var(--acc-violet) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.intro-word {
+  display: inline-block;
+  white-space: pre;
+}
+.intro-name,
+.intro-role {
+  display: inline-block;
+  color: var(--ink);
+}
+.intro-name {
+  font-weight: 700;
+}
+.intro-skip {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  translate: -50% 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.7;
+}
+.bento-title h1 > span:not(.sr-only),
+.bento-title p > span {
+  display: inline-block;
+}
+.title-wait {
+  opacity: 0;
+  animation: title-failsafe 400ms 6.5s forwards;
+}
+@keyframes title-failsafe {
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bento {
+    --intro-delay: 0ms;
+  }
+  .intro {
+    display: none;
+  }
+  .title-wait {
+    opacity: 1;
+  }
+}
+@media (min-width: 640px) {
+  .intro-role {
+    white-space: nowrap;
+  }
+}
+
+/* ===========================================================================
+ * Wordmark: Neotype Variable (Adobe Fonts), a unicase face with a weight
+ * axis. The text is typed as "YASHISH" and the font's own unicase glyphs
+ * shape it; no text-transform. Everything else keeps the existing sans.
+ * "neotype-variable" is Adobe's CSS family name; confirm it against the
+ * Web Project's CSS once the project ID is set.
+ * ======================================================================== */
+:root {
+  --font-wordmark: "neotype-variable", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.wordmark {
+  font-family: var(--font-wordmark);
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: -0.01em;
+  font-kerning: normal;
+}
+.bento-title h1 {
+  font-family: var(--font-wordmark);
+  font-weight: 400;
+  /* Mobile 375–430px: about 56–64px. */
+  font-size: clamp(3rem, 15vw, 4.25rem);
+  /* Fixed line box so the fallback-to-Neotype swap never moves the grid. */
+  line-height: 1;
+  height: 1em;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  max-width: 100%;
+}
+@media (min-width: 640px) {
+  .bento-title h1 {
+    font-size: clamp(4.5rem, 11vw, 7.5rem);
+  }
+}
+@media (min-width: 1024px) and (min-height: 600px) {
+  .bento-title h1 {
+    /* 1280 ≈ 122px, 1440 ≈ 137px, 1920 = 160px. */
+    font-size: clamp(7.5rem, 9.5vw, 10rem);
+  }
+  .bento-title {
+    gap: 8px;
+  }
+  .bento-grid {
+    height: min(calc(100dvh - 250px - 0.4 * clamp(7.5rem, 9.5vw, 10rem)), 54vw);
+  }
+}
+/* In the intro sentence the name keeps the wordmark face at text size. */
+.intro-name.wordmark {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* ---- Player v2: white LCD with the controls inside ---------------------- */
+.lcd {
+  gap: 6px;
+  padding: 10px 12px 12px;
+  background:
+    radial-gradient(120% 120% at 50% 0%, #ffffff 0%, rgb(255 255 255 / 0) 70%),
+    linear-gradient(180deg, #fbfbfa 0%, #f0f0ee 100%);
+  box-shadow:
+    inset 0 1px 3px rgb(0 0 0 / 0.12),
+    inset 0 0 0 1px rgb(0 0 0 / 0.06),
+    0 1px 0 rgb(255 255 255 / 0.9);
+  color: var(--ink);
+}
+.lcd::after {
+  background: repeating-linear-gradient(0deg, rgb(0 0 0 / 0.025) 0 1px, transparent 1px 3px);
+}
+.lcd-top {
+  color: #121212;
+  text-shadow: none;
+  font-size: 1.05rem;
+}
+.lcd-state {
+  gap: 6px;
+  letter-spacing: 0.14em;
+}
+.lcd[data-playing="true"] .lcd-state {
+  animation: none;
+}
+.lcd[data-playing="true"] .lcd-glyph {
+  color: var(--acc-coral);
+  animation: lcd-blink 1.6s steps(1) infinite;
+}
+.lcd-track {
+  filter: none;
+}
+.lcd-progress {
+  background: rgb(0 0 0 / 0.08);
+}
+.lcd-controls {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 2px;
+}
+.lcd-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+  padding: 5px 8px 6px;
+  border-radius: 8px;
+  corner-shape: squircle;
+  background: rgb(0 0 0 / 0.035);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.07);
+  font-family: var(--font-pixel), monospace;
+  text-transform: uppercase;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 200ms, scale 150ms;
+}
+.lcd-btn:hover {
+  background: rgb(0 0 0 / 0.07);
+}
+.lcd-btn:active {
+  scale: 0.97;
+}
+.lcd-btn-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: #8a8a8a;
+}
+.lcd-btn-value {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  color: #121212;
+}
+@media (min-width: 1024px) and (min-height: 600px) {
+  /* Never squeeze the tiles below a readable size; short screens scroll. */
+  .bento-grid {
+    height: max(560px, min(calc(100dvh - 250px - 0.4 * clamp(7.5rem, 9.5vw, 10rem)), 54vw));
+    grid-template-rows: minmax(150px, 0.85fr) minmax(0, 1.9fr) minmax(150px, 0.85fr);
+  }
+}
+
+/* ---- Neotype across the whole site (the retro LCD keeps its pixel faces) */
+body[class] {
+  --font-block: var(--font-wordmark);
+  --font-geist-sans: var(--font-wordmark);
+  font-family: var(--font-wordmark);
+}
