@@ -6,4 +6,4 @@
  * the ID is "abc1def". The font is served by Adobe; nothing is self-hosted.
  * Leave it empty and the wordmark uses the system sans-serif fallback.
  */
-export const ADOBE_FONTS_PROJECT_ID = process.env.NEXT_PUBLIC_ADOBE_FONTS_PROJECT_ID ?? "";
+export const ADOBE_FONTS_PROJECT_ID = process.env.NEXT_PUBLIC_ADOBE_FONTS_PROJECT_ID ?? "fev1wov";

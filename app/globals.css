@@ -3278,21 +3278,16 @@ html[data-theme-anim="1"]::view-transition-new(root) {
     opacity: 1;
   }
 }
-@media (min-width: 640px) {
-  .intro-role {
-    white-space: nowrap;
-  }
-}
 
 /* ===========================================================================
  * Wordmark: Neotype Variable (Adobe Fonts), a unicase face with a weight
  * axis. The text is typed as "YASHISH" and the font's own unicase glyphs
  * shape it; no text-transform. Everything else keeps the existing sans.
- * "neotype-variable" is Adobe's CSS family name; confirm it against the
- * Web Project's CSS once the project ID is set.
+ * The Web Project (fev1wov) serves the family as "neotype-vf", weights
+ * 100–900 on one variable file.
  * ======================================================================== */
 :root {
-  --font-wordmark: "neotype-variable", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-wordmark: "neotype-vf", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 .wordmark {
   font-family: var(--font-wordmark);

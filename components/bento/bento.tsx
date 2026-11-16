@@ -93,6 +93,9 @@ const MOTION_LABEL = ["Breathe", "Wave", "Still"] as const;
 const DENSITY_LABEL = ["High", "Ultra", "Medium"] as const;
 const TONE_LABEL = ["Ink", "Accent", "Duo"] as const;
 
+/** Photos on the player screen, switched in a loop by the dots. */
+const PHOTOS = ["/scene/photo-1.webp", "/scene/photo-2.webp"];
+
 const SETTLE = { duration: 0.9, ease: [0.22, 1, 0.36, 1] } as const;
 
 const delay = (i: number): CSSProperties =>
@@ -359,17 +362,17 @@ export function Bento(): ReactNode {
             className="device-screen device-screen-hero"
           >
             <DotMatrix
-              src="/scene/portrait.webp"
+              srcs={PHOTOS}
               density={density}
               motion={motion}
               tone={tone}
               theme={current}
             />
             <Image
-              src="/scene/portrait.webp"
-              alt="Yashish Kpur in sunglasses"
-              width={607}
-              height={556}
+              src="/scene/photo-1.webp"
+              alt="Yashish Kpur"
+              width={546}
+              height={640}
               priority
               unoptimized
               draggable={false}

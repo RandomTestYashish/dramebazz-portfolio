@@ -3,7 +3,8 @@
 import { useEffect, useRef, type ReactNode } from "react";
 
 type Props = {
-  src: string;
+  /** Cut-out photos; with more than one, the dots wipe from one to the next. */
+  srcs: string[];
   /** 0, 1 or 2: medium, fine, coarse dots. */
   density?: number;
   /** 0 breathe, 1 wave, 2 still. */
@@ -30,15 +31,21 @@ const ACCENT_STOPS: [number, string][] = [
 
 const clamp01 = (n: number): number => (n < 0 ? 0 : n > 1 ? 1 : n);
 
+/** How long each photo holds before the dots wipe to the next one. */
+const HOLD_MS = 1800;
+/** Wipe speed per frame (~30fps, so about half a second per switch). */
+const WIPE_STEP = 0.06;
+
 /** How strongly the dots move for Breathe, Wave and Still. */
 const MOTION_AMP = [0.08, 0.32, 0] as const;
 
 /**
- * An LED-style dot screen. The portrait is sampled into a grid of dots that
- * breathe or ripple; knobs outside change density, motion and tone.
+ * An LED-style dot screen. Each photo is sampled into a grid of dots that
+ * breathe or ripple, and the screen keeps switching photos with a
+ * left-to-right dot wipe. Controls outside change density, motion and tone.
  */
 export function DotMatrix({
-  src,
+  srcs,
   density = 0,
   motion = 0,
   tone = 0,
@@ -58,15 +65,22 @@ export function DotMatrix({
     if (!canvas || !host || !ctx) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const img = new window.Image();
-    img.src = src;
+    const imgs = srcs.map((src) => {
+      const im = new window.Image();
+      im.src = src;
+      return im;
+    });
 
     let w = 0;
     let h = 0;
     let sp = 7;
     let cols = 0;
     let rows = 0;
-    let face = new Float32Array(0);
+    let faces: Float32Array[] = [];
+    let cur = 0;
+    let wipe = 0;
+    let wiping = false;
+    let lastSwitch = performance.now();
     let builtFor = -1;
     let builtTheme = "";
     let raf = 0;
@@ -100,31 +114,34 @@ export function DotMatrix({
       const o = off.getContext("2d", { willReadFrequently: true });
       if (!o) return;
 
-      // Portrait: fit to the screen height, sit on the bottom edge.
-      const ar = img.naturalWidth / img.naturalHeight || 1;
-      let dh = rows * 0.9;
-      let dw = dh * ar;
-      if (dw > cols) {
-        dw = cols;
-        dh = dw / ar;
-      }
-      o.clearRect(0, 0, cols, rows);
-      o.drawImage(img, (cols - dw) / 2, rows - dh, dw, dh);
-      const pd = o.getImageData(0, 0, cols, rows).data;
-      face = new Float32Array(cols * rows);
-      for (let i = 0; i < cols * rows; i++) {
-        const a = (pd[i * 4 + 3] ?? 0) / 255;
-        if (a < 0.15) continue;
-        const lum =
-          (0.3 * (pd[i * 4] ?? 0) +
-            0.59 * (pd[i * 4 + 1] ?? 0) +
-            0.11 * (pd[i * 4 + 2] ?? 0)) /
-          255;
-        // Lit screen: bright = big dots. Pale screen: dark = big dots.
-        face[i] = lit
-          ? a * (0.12 + 0.88 * Math.pow(lum, 1.05))
-          : a * (0.12 + 0.88 * Math.pow(1 - lum, 0.95));
-      }
+      faces = imgs.map((img) => {
+        // Photo: fit to the screen height, sit on the bottom edge.
+        const ar = img.naturalWidth / img.naturalHeight || 1;
+        let dh = rows * 0.92;
+        let dw = dh * ar;
+        if (dw > cols) {
+          dw = cols;
+          dh = dw / ar;
+        }
+        o.clearRect(0, 0, cols, rows);
+        o.drawImage(img, (cols - dw) / 2, rows - dh, dw, dh);
+        const pd = o.getImageData(0, 0, cols, rows).data;
+        const face = new Float32Array(cols * rows);
+        for (let i = 0; i < cols * rows; i++) {
+          const a = (pd[i * 4 + 3] ?? 0) / 255;
+          if (a < 0.15) continue;
+          const lum =
+            (0.3 * (pd[i * 4] ?? 0) +
+              0.59 * (pd[i * 4 + 1] ?? 0) +
+              0.11 * (pd[i * 4 + 2] ?? 0)) /
+            255;
+          // Lit screen: bright = big dots. Pale screen: dark = big dots.
+          face[i] = lit
+            ? a * (0.12 + 0.88 * Math.pow(lum, 1.05))
+            : a * (0.12 + 0.88 * Math.pow(1 - lum, 0.95));
+        }
+        return face;
+      });
 
       canvas.dataset.ready = "true";
     };
@@ -134,6 +151,27 @@ export function DotMatrix({
       if (s.density !== builtFor || s.theme !== builtTheme) build();
       const pal = PALETTE[s.theme];
       if (!cols) return;
+
+      // Photo loop: hold, then wipe to the next one. Paused on Still.
+      const n = faces.length;
+      if (n > 1 && !reduce && s.motion !== 2) {
+        if (!wiping && now - lastSwitch > HOLD_MS) {
+          wiping = true;
+          wipe = 0;
+        }
+        if (wiping) {
+          wipe += WIPE_STEP;
+          if (wipe >= 1) {
+            cur = (cur + 1) % n;
+            wipe = 0;
+            wiping = false;
+            lastSwitch = now;
+          }
+        }
+      }
+      const from = faces[cur] ?? new Float32Array(0);
+      const to = faces[(cur + 1) % Math.max(n, 1)] ?? from;
+      const mix = wiping ? wipe : 0;
 
       ctx.clearRect(0, 0, w, h);
       const ox = (w - cols * sp) / 2 + sp / 2;
@@ -158,7 +196,9 @@ export function DotMatrix({
         const dy = cy - pointer.y;
         for (let x = 0; x < cols; x++) {
           const i = y * cols + x;
-          const v = face[i] ?? 0;
+          // A left-to-right wipe rather than a flat cross-fade.
+          const local = mix ? clamp01(mix * 1.6 - (x / cols) * 0.6) : 0;
+          const v = (from[i] ?? 0) * (1 - local) + (to[i] ?? 0) * local;
           const cx = ox + x * sp;
 
           let k = v;
@@ -279,7 +319,9 @@ export function DotMatrix({
       pointer.y = -9999;
     };
 
-    const ready = img.decode ? img.decode() : Promise.resolve();
+    const ready = Promise.all(
+      imgs.map((im) => (im.decode ? im.decode().catch(() => undefined) : undefined)),
+    );
     void Promise.all([ready, document.fonts?.ready]).then(() => {
       start();
       ro.observe(host);
@@ -295,7 +337,9 @@ export function DotMatrix({
       host.removeEventListener("pointermove", onMove);
       host.removeEventListener("pointerleave", onLeave);
     };
-  }, [src]);
+    // srcs is compared by value so a new array literal doesn't restart it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [srcs.join("|")]);
 
   return <canvas ref={canvasRef} className="dot-canvas" aria-hidden="true" />;
 }
