@@ -29,6 +29,7 @@ import { PanelSheet } from "@/components/scene/panel-sheet";
 import { asset } from "@/lib/asset";
 import { panels, type PanelId } from "@/content/scene";
 import { DotMatrix } from "./dot-matrix";
+import { AboutSheet } from "./about-sheet";
 import { Ambient } from "./ambient";
 import { Intro, ROLE_ID } from "./intro";
 import { applySquircles, nativeSquircle } from "./squircle";
@@ -499,7 +500,11 @@ export function Bento(): ReactNode {
                 <span className="bento-h3">{panel.title}</span>
                 <span className="bento-p">{firstLine(panel.intro)}</span>
               </span>
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="bento-icon">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="bento-icon"
+              >
                 <mask
                   id={`bento-icon-mask-${w.id}`}
                   maskUnits="userSpaceOnUse"
@@ -536,7 +541,16 @@ export function Bento(): ReactNode {
 
       <AnimatePresence>
         {open ? (
-          <PanelSheet key={open} panel={panels[open]} onClose={close} />
+          open === "about" ? (
+            <AboutSheet
+              key="about"
+              onClose={close}
+              photos={PHOTOS}
+              theme={current}
+            />
+          ) : (
+            <PanelSheet key={open} panel={panels[open]} onClose={close} />
+          )
         ) : null}
       </AnimatePresence>
     </div>
