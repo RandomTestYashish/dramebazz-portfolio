@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <defs>
+    <radialGradient id="glow" cx="60" cy="62" r="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D9573F" stop-opacity="0.55"/>
+      <stop offset="0.7" stop-color="#D9573F" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#D9573F" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="body" cx="44" cy="40" r="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F48A6A"/>
+      <stop offset="0.45" stop-color="#E0573D"/>
+      <stop offset="1" stop-color="#B84B43"/>
+    </radialGradient>
+    <radialGradient id="sheen" cx="76" cy="84" r="30" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F1D4D1" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#F1D4D1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="60" cy="60" r="60" fill="url(#glow)"/>
+  <circle cx="60" cy="60" r="34" fill="url(#body)"/>
+  <circle cx="60" cy="60" r="34" fill="url(#sheen)"/>
+  <path d="M60 42C61.2 55.6 64.4 58.8 78 60C64.4 61.2 61.2 64.4 60 78C58.8 64.4 55.6 61.2 42 60C55.6 58.8 58.8 55.6 60 42Z" fill="#fff"/>
+</svg>
